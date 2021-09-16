@@ -15,8 +15,7 @@ import matplotlib.font_manager as fm
 import seaborn as sns;sns.set();sns.set_style("white")
 
 xr.set_options(keep_attrs=True)
-DS = xr.open_dataset('../../s5p-tools/processed/processed__NO2___/NO2___14-9-2021__14-9-2021.nc')
-
+DS = xr.open_dataset('../../s5p-tools/processed/processed__NO2___/NO2___1-9-2020__1-9-2020.nc')
 VARIABLE = 'tropospheric_NO2_column_number_density'
 
 print(DS[VARIABLE].attrs)
@@ -34,8 +33,8 @@ ax.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True, useOffset
 
 boxplot = sns.boxplot(data=boxes_weekday,
                       linewidth=0.5, width=0.5, saturation=0.5, showfliers=False, color="slategrey")
-boxplot.set_xticklabels(WEEKDAYS_LABEL)
-plt.ylabel(LABEL, labelpad=10)
+#boxplot.set_xticklabels(WEEKDAYS_LABEL)
+#plt.ylabel(LABEL, labelpad=10)
 plt.show()
 
 #plt.savefig("{folder_plots}/box_plot_weekdays_NO2.{format}".format(folder_plots=folder_plots,
