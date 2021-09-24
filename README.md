@@ -17,6 +17,5 @@ analysis: https://github.com/bilelomrani1/s5p-analysis
 ## Meterological
 
 ## COVID-19
-
+Brussels COVID-19 data is available at https://epistat.sciensano.be/Data/COVID19BE.xlsx. The description of the variables can be found in https://epistat.sciensano.be/COVID19BE_codebook.pdf and other dataset information at https://epistat.wiv-isp.be/covid/.
 # Models
-
