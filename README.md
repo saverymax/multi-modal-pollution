@@ -13,6 +13,10 @@ Run from https://github.com/bilelomrani1/s5p-tools
 analysis: https://github.com/bilelomrani1/s5p-analysis
 
 ## Traffic Counts
+Need pyxlsb for Brx data
+```
+conda install -n sentinel_env pyxlsb -c conda-forge
+```
 
 ## Meterological
 
