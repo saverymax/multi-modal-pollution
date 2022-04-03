@@ -1,5 +1,9 @@
 # multi-modal-pollution
+
 Utilizing disparate data sources, train a transformer to forecast air pollution levels during COVID-19 lockdowns in Brussels
+
+See documentation at https://saverymax.github.io/multi-modal-pollution/
+
 
 # DATA
 All data except Sentinel-5P data can be found the the data repository. The Sentinel-5P data must be downloaded and processed yourself, though there may be a shared drive made available for this data.
