@@ -134,3 +134,7 @@ I am using work in mvts_transformer to learn about more unit testing in pytorch.
 - https://www.reddit.com/r/pytorch/comments/kd2dk4/testing_framework/
 - https://pytorch.org/docs/stable/generated/torch._assert.html
 - HuggingFace has really interesting tests, and they actually think about how to compare things: https://github.com/huggingface/transformers/blob/main/tests/bert/test_modeling_bert.py
+
+And on fixture:
+- https://towardsdatascience.com/make-your-python-tests-efficient-with-pytest-fixtures-3d7a1892265f 
+Fixtures just set up the variables (environment) we need to test the function we want to test.
