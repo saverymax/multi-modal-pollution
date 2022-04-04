@@ -1,7 +1,11 @@
 # Lab notebook for thesis
 
-## This is bit of an experiment in making lab notebook public and open source. But I think it is valuable to show progress and as a resource
+## Intro
+
+This is bit of an experiment in making lab notebook public and open source. But I think it is valuable to show progress and as a resource
 for later work.
+
+## HPC 
 
 Submitting interactive jobs:
 gpu
@@ -61,9 +65,9 @@ gh auth login
 and follow protocol.
 You know, I had to generate a Personal access key to do this, with the correct scope. You can do this in GitHub Developer settings in settings. https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
-# Sentinel Data
+## Sentinel Data
 
-## Installation of s5p:
+### Installation of s5p:
 conda create --override-channels -c conda-forge --file requirements.txt --name sentinel_env
 pip install sentinelsat
 
@@ -103,9 +107,9 @@ And to compress
 python s5p-compress.py $VSC_DATA/thesis/s5p-tools/processed/processed__NO2___/NO2___26-8-2021__26-8-2021.nc tropospheric_NO2_column_number_density
 
 
-# Code progress:
+## Code progress:
 
-## Forecasting
+### Forecasting
 
 Finished modifying ForecastRunner. Need to test.
 
@@ -119,7 +123,7 @@ Get bxl data in good shape, add measuring stations and somethingg.. sentinel..
 limit_size in bxl data??
 
 
-# Documentation
+## Documentation
 
 Running sphinx documentation. Need to publish GitHub pages from gh-pages branch, but have the github actions file in master. I can update docs in the github pages branch? Im not totall sure. 
 Oh, I just push docs to the main branch, but its just that github actions will build docs in the gh-pages branch...
