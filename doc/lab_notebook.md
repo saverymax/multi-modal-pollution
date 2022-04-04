@@ -99,7 +99,7 @@ conda config --set channel_priority false
 ```
 and reinstall my mvts environment after messing it up.
 
-## Running 
+### Running 
 To request
 python s5p-request.py L2__NO2___ --aoi $VSC_DATA/thesis/multi-modal-pollution/data/geojson/Brussels_tunnels_polygon.json --date 20200301 20210601
 
@@ -107,23 +107,30 @@ And to compress
 python s5p-compress.py $VSC_DATA/thesis/s5p-tools/processed/processed__NO2___/NO2___26-8-2021__26-8-2021.nc tropospheric_NO2_column_number_density
 
 
-## Code progress:
+## Code progress
 
 ### Forecasting
 
-Finished modifying ForecastRunner. Need to test.
-
-good advice: doing all handling outside of the classes, and once you select the class, no options are handled.
-
-Need to deal with self.IDS now that I am handling forecasting in a realistic way.
-
-Go through all todos!
-
-Get bxl data in good shape, add measuring stations and somethingg.. sentinel..
-limit_size in bxl data??
+- good advice: doing all handling outside of the classes, and once you select the class, no options are handled.
+- Go through all todos!
+- Finished modifying ForecastRunner. Need to test.
+- Get bxl data in good shape, add measuring stations
+- limit_size in bxl data??
+- Need to deal with self.IDS now that I am handling forecasting in a realistic way.
 
 
 ## Documentation
 
 Running sphinx documentation. Need to publish GitHub pages from gh-pages branch, but have the github actions file in master. I can update docs in the github pages branch? Im not totall sure. 
 Oh, I just push docs to the main branch, but its just that github actions will build docs in the gh-pages branch...
+
+## Testing
+
+I am using work in mvts_transformer to learn about more unit testing in pytorch. Some resources:
+- https://krokotsch.eu/posts/deep-learning-unit-tests/
+- https://theaisummer.com/unit-test-deep-learning/
+- Pytorch lightning is especially good: https://github.com/PyTorchLightning/pytorch-lightning/tree/master/tests/models
+- Nice template for coding projects: https://github.com/ashleve/lightning-hydra-template
+- https://www.reddit.com/r/pytorch/comments/kd2dk4/testing_framework/
+- https://pytorch.org/docs/stable/generated/torch._assert.html
+- HuggingFace has really interesting tests, and they actually think about how to compare things: https://github.com/huggingface/transformers/blob/main/tests/bert/test_modeling_bert.py
