@@ -109,20 +109,50 @@ python s5p-compress.py $VSC_DATA/thesis/s5p-tools/processed/processed__NO2___/NO
 
 ## Code progress
 
+Good advice: doing all handling outside of the classes, and once you select the class, no options are handled.
+
 ### Forecasting
 
-- good advice: doing all handling outside of the classes, and once you select the class, no options are handled.
 - Go through all todos!
 - Finished modifying ForecastRunner. Need to test.
-- Get bxl data in good shape, add measuring stations
-- limit_size in bxl data??
 - Need to deal with self.IDS now that I am handling forecasting in a realistic way.
+- Get bxl data in good shape, add measuring stations
+- limit_size option? Limits size of dataset to random sample subset, for debug purposes.
+- Add tests and how to run pytest 
 
 
 ## Documentation
 
 Running sphinx documentation. Need to publish GitHub pages from gh-pages branch, but have the github actions file in master. I can update docs in the github pages branch? Im not totall sure. 
 Oh, I just push docs to the main branch, but its just that github actions will build docs in the gh-pages branch...
+
+## Logging
+
+Logging using Weights and Biases.
+
+Basic initiation looks like:
+
+```
+import wandb
+
+wandb_config = dict(
+        data_class=config['data_class'],
+        learning_rate=config['lr'],
+        d_model=config['d_model'],
+        max_len=config['max_seq_len']
+        task=config['task'],
+    )
+
+    # mix is my wandb username
+    wandb.init(
+        project="mvts-forecasting",
+        entity="mix",
+        notes=config['comment'],
+        tags=["forecasting", 'transformer'],
+        config=wandb_config,
+    ) 
+```
+
 
 ## Testing
 
