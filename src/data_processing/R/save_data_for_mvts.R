@@ -203,8 +203,38 @@ stopifnot(nrow(df_ts)==nrow(rep_traffic))
 df_join <- cbind(df_ts, rep_traffic)
 df_join$time <- rep(traffic_transpose$day, nrow(selected_stations))
 View(df_join)
-df_join
-
 # Funny little bit of code to drop day.
 df_join <- df_join[!names(df_join) %in% c("day")]
+
+# As of 4-7-2022, I want to split the time series into smaller series. 
+# I need to create a new id that is indexed by the air measuring station and the time subsets I want
+split_time <- vector(length=nrow(df_join))
+sub_ids <- vector(length=nrow(df_join))
+length(split_ids)
+time_cnt <- 0
+sub_id <- 1
+seq_len <- 30
+for (i in 1:nrow(df_join)){
+    time_cnt <- time_cnt + 1
+    if (time_cnt == seq_len + 1){
+        time_cnt <- 1
+        sub_id <- sub_id + 1 
+    }
+    if (df_join[i, 'station'] != current_station){
+        # When we change stations, reset time and sub ids.
+        sub_id <- 1
+        time_cnt <- 1
+    }
+    current_station <- df_join[i, 'station']    
+    new_id <- paste(current_station, "_", sub_id, sep = "")
+    sub_ids[i] <- new_id
+    split_time[i] <- time_cnt
+}
+sub_ids
+split_time
+df_join$station_subset <- sub_ids
+df_join$split_time <- split_time
+View(df_join)
+# Splits into 16 series.
+
 write_csv(df_join, file="d:/asus_documents/ku_leuven/thesis/data/air_quality_bxl_all_traffic_stations.csv")
