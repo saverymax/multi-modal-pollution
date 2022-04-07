@@ -128,10 +128,17 @@ Oh, I just push docs to the main branch, but its just that github actions will b
 
 ## Logging
 
-Logging using Weights and Biases.
+The logging uses Weights and Biases.
+
+You can see the experiments I have run at https://wandb.ai/mix/mvts-forecasting?workspace=user-mix
 
 Basic initiation looks like:
 
+From command line
+```
+wandb login <YOUR-API-KEY>
+```
+and in Python 
 ```
 import wandb
 
@@ -143,15 +150,16 @@ wandb_config = dict(
         task=config['task'],
     )
 
-    # mix is my wandb username
     wandb.init(
         project="mvts-forecasting",
-        entity="mix",
         notes=config['comment'],
         tags=["forecasting", 'transformer'],
         config=wandb_config,
     ) 
+
+wandb.log(loss)
 ```
+
 
 
 ## Testing
