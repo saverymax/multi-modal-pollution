@@ -1,5 +1,5 @@
 # Saving data in format for MVTS transformer package.
-# This package expects a .ts file, and will load it into pandas.
+# mvts_transformer expects a .ts file, and will load it into pandas.
 # However, this script saves the data directly into a csv that can be loaded 
 # into pandas in the same format as expected by MVTS.
 # https://www.sktime.org/en/stable/examples/loading_data.html#ts_files
@@ -114,13 +114,15 @@ rep_cases <- rep(covid_subset$total_cases, nrow(selected_stations))
 rep_cases
 stopifnot(nrow(df_ts)==length(rep_cases))
 df_ts$COVID <- rep_cases
+dim(df_ts)
 
 # then load the traffic data.
 # https://en.wikipedia.org/wiki/List_of_tunnels_in_Belgium
 # Can use this to find the abbreviations and locations of tunnels
 # https://data.mobility.brussels/mobigis/?x=485351&y=6593040&zoom=12&baselayer=urbis_grey&layers=traffic_live_geom%3BTunnels%3B
 # Tunnels in entry points of brussels:
-tunnels <- c("Tun VP - A12", "Tun Del - Parking", "Tun Terv - Centre", "Tun Montg - Cambre", "Tun Ste OUT - Centre et Bas - Cambre", "Tun Lou IN - Bas - Midi et Cambre") 
+# Was going to include "Tun Terv - Centre" but not enough data
+tunnels <- c("Tun VP - A12", "Tun Del - Parking",  "Tun Montg - Cambre", "Tun Ste OUT - Centre et Bas - Cambre", "Tun Lou IN - Bas - Midi et Cambre") 
 
 traffic_df <- read_excel(
         path="d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/traffic/20210921-tunnels2019-sept2021.xlsx"
@@ -132,12 +134,13 @@ traffic_summary <- traffic_df %>% dplyr::group_by(detector) %>%
   arrange(desc(avg_tf))
 traffic_summary$detector
 # using tun bel in because it has data for longest period with a high average
-detector_df <- traffic_df %>% dplyr::filter(detector=="Tun Bel IN")
-nrow(detector_df)
+#detector_df <- traffic_df %>% dplyr::filter(detector=="Tun Bel IN")
+detector_df <- traffic_df %>% dplyr::filter(detector %in% tunnels) 
+dim(detector_df)
+head(detector_df)
 detector_df$from <- ymd_hms(detector_df$from)
 min(detector_df$from)
 max(detector_df$from)
-head(detector_df)
 # this detector starts at 2019-01-01 00:00:00
 # day duration counter https://www.timeanddate.com/date/duration.html?d1=01&m1=01&y1=2019&d2=&m2=&y2=&ti=on&
 detector_subset <- detector_df %>% dplyr::filter(from > "2020-03-01 00:00:00" & from <= "2021-06-01")
@@ -147,7 +150,8 @@ nrow(detector_subset)
 
 # fill in missing dates
 # https://blog.exploratory.io/populating-missing-dates-with-complete-and-fill-functions-in-r-and-exploratory-79f2a321e6b5
-detector_complete <- detector_subset %>% tidyr::complete(from = seq(min(from), max(from), by="hour"))
+detector_complete <- detector_subset %>% group_by(detector) %>% tidyr::complete(from = seq(min(from), max(from), by="hour"))
+detector_complete
 min(detector_complete$from)
 max(detector_complete$from)
 nrow(detector_complete)
@@ -158,32 +162,49 @@ nrow(detector_complete)
 # https://cran.r-project.org/web/packages/imputets/
 # https://stats.stackexchange.com/questions/261271/imputation-methods-for-time-series-data
 # https://stats.stackexchange.com/questions/261271/imputation-methods-for-time-series-data
-# imputets is for univariate, it is probably ok to use for the sake of this
-# project
+
 statsNA(as.matrix(detector_complete$volume))
 # run imputations
 # choice between linear, spline, and stineman interpolations
-# need to round for some reason.
-detector_complete$volume_inter <- round(na_interpolation(detector_complete$volume),1)
+#detector_complete$volume_inter <- round(na_interpolation(detector_complete$volume),1)
 # Kalman filtering looks really bad in this data
 # detector_complete$volume_inter <- round(na_kalman(detector_complete$volume, smooth=T),1)
-ggplot_na_imputations(detector_complete$volume, detector_complete$volume_inter)
-statsNA(as.matrix(detector_complete$volume_inter))
+#ggplot_na_imputations(detector_complete$volume, detector_complete$volume_inter)
+#statsNA(as.matrix(detector_complete$volume_inter))
+
+detector_complete <- detector_complete %>% 
+    group_by(detector) %>% 
+    mutate(volume_inter=round(na_interpolation(volume), 1))
+
+detector_complete
+statsNA(as.matrix(detector_complete$volume_inter)) 
 
 # aggregate by day, but need to round up if staying in 2019
-traffic_daily <- detector_complete %>% mutate(day=lubridate::ceiling_date(from, "day")) %>% group_by(day) %>% 
+traffic_daily <- detector_complete %>% group_by(detector) %>% mutate(day=lubridate::ceiling_date(from, "day")) %>% group_by(day, .add=T) %>% 
   summarise(daily_volume=mean(volume_inter)) 
-traffic_daily
-nrow(traffic_daily)
-min(traffic_daily$day)
-max(traffic_daily$day)
+
+View(traffic_daily)
+
+traffic_daily %>% group_by(detector) %>% summarise(n = n(), min=min(day), max=max(day))
+
 # create the ts
-rep_traffic <- rep(traffic_daily$daily_volume, nrow(selected_stations)) 
-stopifnot(nrow(df_ts)==length(rep_traffic))
-df_ts$traffic_vol <- rep_traffic
-df_ts$time <- rep(traffic_daily$day, nrow(selected_stations))
-df_sort <- df_ts %>% arrange(time) %>% group_by(station) 
+# First need to transpose
+traffic_transpose <- tidyr::pivot_wider(traffic_daily, names_from=detector, values_from = daily_volume)
+traffic_transpose
+rep_traffic <- do.call(rbind, replicate(nrow(selected_stations), as.matrix(traffic_transpose), simplify=FALSE))
+nrow(rep_traffic)
+head(rep_traffic)
+# Nice function but it only repeats the rows in an adjacent way, not in an rbind dataframe way...
+# rep_traffic <- traffic_transpose %>% uncount(nrow(selected_stations)) 
+# Way of doing it when there was just one measuring station
+#rep_traffic <- rep(traffic_daily$daily_volume, nrow(selected_stations)) 
+#df_ts$traffic_vol <- rep_traffic
+stopifnot(nrow(df_ts)==nrow(rep_traffic))
+df_join <- cbind(df_ts, rep_traffic)
+df_join$time <- rep(traffic_transpose$day, nrow(selected_stations))
+View(df_join)
+df_join
 
 # Funny little bit of code to drop day.
-#df_ts <- df_ts[!names(df_ts) %in% c("day")]
-write_csv(df_sort, file="d:/asus_documents/ku_leuven/thesis/data/air_quality_bxl.csv")
+df_join <- df_join[!names(df_join) %in% c("day")]
+write_csv(df_join, file="d:/asus_documents/ku_leuven/thesis/data/air_quality_bxl_all_traffic_stations.csv")
