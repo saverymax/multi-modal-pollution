@@ -210,10 +210,12 @@ df_join <- df_join[!names(df_join) %in% c("day")]
 # I need to create a new id that is indexed by the air measuring station and the time subsets I want
 split_time <- vector(length=nrow(df_join))
 sub_ids <- vector(length=nrow(df_join))
-length(split_ids)
+length(sub_ids)
 time_cnt <- 0
 sub_id <- 1
 seq_len <- 30
+# Splits into 16 series if seq len 30.
+current_station = df_join[1, 'station']
 for (i in 1:nrow(df_join)){
     time_cnt <- time_cnt + 1
     if (time_cnt == seq_len + 1){
@@ -235,6 +237,6 @@ split_time
 df_join$station_subset <- sub_ids
 df_join$split_time <- split_time
 View(df_join)
-# Splits into 16 series.
+names(df_join) <- gsub("__", "_", gsub(" ", "_", gsub("-", "", tolower(names(df_join)))))
 
 write_csv(df_join, file="d:/asus_documents/ku_leuven/thesis/data/air_quality_bxl_all_traffic_stations.csv")
