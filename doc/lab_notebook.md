@@ -123,8 +123,9 @@ Good advice: doing all handling outside of the classes, and once you select the 
 
 ## Documentation
 
-Running sphinx documentation. Need to publish GitHub pages from gh-pages branch, but have the github actions file in master. I can update docs in the github pages branch? Im not totall sure. 
-Oh, I just push docs to the main branch, but its just that github actions will build docs in the gh-pages branch...
+Running sphinx documentation. Push docs to the main branch, and github actions will build docs in the gh-pages branch.
+
+Math can be added as described here: https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#syntax-amsmath. Add "amsmath" to the conf.py file.
 
 ## Logging
 
@@ -173,6 +174,6 @@ I am using work in mvts_transformer to learn about more unit testing in pytorch.
 - https://pytorch.org/docs/stable/generated/torch._assert.html
 - HuggingFace has really interesting tests, and they actually think about how to compare things: https://github.com/huggingface/transformers/blob/main/tests/bert/test_modeling_bert.py
 
-And on fixture:
+And on fixtures:
 - https://towardsdatascience.com/make-your-python-tests-efficient-with-pytest-fixtures-3d7a1892265f 
 Fixtures just set up the variables (environment) we need to test the function we want to test.
