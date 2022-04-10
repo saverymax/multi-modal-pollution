@@ -11,6 +11,9 @@ library(readxl)
 library(imputeTS)
 library(kableExtra)
 
+user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution/src/data_processing/R"
+setwd(user_dir)
+
 chem_names <- c("PM25", "PM10", "NO2")
 chem_ids <- vector(mode="list", length=length(chem_names))
 names(chem_ids) <- chem_names
@@ -239,4 +242,42 @@ df_join$split_time <- split_time
 View(df_join)
 names(df_join) <- gsub("__", "_", gsub(" ", "_", gsub("-", "", tolower(names(df_join)))))
 
-write_csv(df_join, file="d:/asus_documents/ku_leuven/thesis/data/air_quality_bxl_all_traffic_stations.csv")
+
+# Note that this has to be manually checked based on the specified seq_len
+# because the date is chosen based on the sub_id so that the train and test
+# sets will contain complete series. We don't want to split so that 
+# some series are divided in half.
+setwd(user_dir)
+train_subset <- df_join %>% dplyr::filter(time < "2021-02-24")
+test_subset <- df_join %>% dplyr::filter(time >= "2021-02-24")
+# Do a quick check
+require(stringr)
+min_id <- 13
+match_cnt <- 0
+for (i in 1:nrow(test_subset)){
+    sub_id <- test_subset[i, 'station_subset']
+    current_id <- str_split(sub_id, "_")[[1]][2]
+    stopifnot(as.numeric(current_id) >= min_id)
+    if (as.numeric(current_id) == min_id){
+        match_cnt <- match_cnt + 1
+    }
+}
+# Number of stations times 1 times length of that series
+stopifnot(match_cnt == 41*30)
+# Then trainset
+min_id <- 13
+match_cnt <- 0
+for (i in 1:nrow(train_subset)){
+    sub_id <- train_subset[i, 'station_subset']
+    current_id <- str_split(sub_id, "_")[[1]][2]
+    stopifnot(as.numeric(current_id) < min_id)
+    if (as.numeric(current_id) == min_id - 1){
+        match_cnt <- match_cnt + 1
+    }
+}
+# Number of stations times 1 times length of that series
+stopifnot(match_cnt == 41*30)
+# Should check out
+write_csv(df_join, file="../../../data/mvts/air_quality_bxl_all.csv")
+write_csv(train_subset, file="../../../data/mvts/air_quality_bxl_train.csv")
+write_csv(test_subset, file="../../../data/mvts/air_quality_bxl_test.csv")
