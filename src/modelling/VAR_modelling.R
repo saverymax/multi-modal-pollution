@@ -211,9 +211,9 @@ chem_ids[[3]] <- 8
 for (chem_index in 1:length(chem_ids)){
     chem_id <- chem_ids[[chem_index]]
     chem <- names(chem_ids)[chem_index]
-    if (chem != "NO2"){
-        next
-    }
+    #if (chem != "NO2"){
+    #    next
+    #}
     print(chem)
     require(plyr)
     setwd(paste("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air/time_series_brux_", chem_id, sep=""))
