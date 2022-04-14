@@ -242,6 +242,8 @@ df_join$split_time <- split_time
 View(df_join)
 names(df_join) <- gsub("__", "_", gsub(" ", "_", gsub("-", "", tolower(names(df_join)))))
 
+# Create integer value for station
+df_join %>% mutate(station_int = as.numeric(factor(station))) -> df_join
 
 # Note that this has to be manually checked based on the specified seq_len
 # because the date is chosen based on the sub_id so that the train and test
@@ -278,6 +280,6 @@ for (i in 1:nrow(train_subset)){
 # Number of stations times 1 times length of that series
 stopifnot(match_cnt == 41*30)
 # Should check out
-write_csv(df_join, file="../../../data/mvts/air_quality_bxl_all.csv")
-write_csv(train_subset, file="../../../data/mvts/air_quality_bxl_train.csv")
-write_csv(test_subset, file="../../../data/mvts/air_quality_bxl_test.csv")
+write_csv(df_join, file="../../../data/mvts_train/air_quality_bxl_all.csv")
+write_csv(train_subset, file="../../../data/mvts_train/air_quality_bxl_train.csv")
+write_csv(test_subset, file="../../../data/mvts_train/air_quality_bxl_test.csv")
