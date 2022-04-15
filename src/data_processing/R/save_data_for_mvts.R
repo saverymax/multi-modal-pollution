@@ -11,7 +11,7 @@ library(readxl)
 library(imputeTS)
 library(kableExtra)
 
-user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution/src/data_processing/R"
+user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution"
 setwd(user_dir)
 
 chem_names <- c("PM25", "PM10", "NO2")
@@ -22,7 +22,7 @@ chem_ids[[2]] <- 5
 chem_ids[[3]] <- 8
 
 # Load selected stations from station_select_for_mvts.R
-station_file="d:/asus_documents/ku_leuven/thesis/data/selected_stations_for_training.txt"
+station_file="data/selected_stations_for_training.txt"
 selected_stations <- read.table(station_file)
 names(selected_stations) <- c("station")
 selected_stations
@@ -42,7 +42,7 @@ for (chem_index in 1:length(chem_ids)){
     chem <- names(chem_ids)[chem_index]
     print(chem)
     require(plyr)
-    setwd(paste("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air/time_series_brux_", chem_id, sep=""))
+    setwd(paste(user_dir, "/data/eea_air/time_series_brux_", chem_id, sep=""))
     air_df <- ldply(list.files(), read.csv, header=T)
     # this package does not play nice with dplyr, so unload once done.
     detach("package:plyr", unload=T)
@@ -68,7 +68,7 @@ for (chem_index in 1:length(chem_ids)){
         # choice between linear, spline, and stineman interpolations
         # need to round for some reason.
         #station_complete$concentration_inter <- round(na_interpolation(station_complete$Concentration),1)
-        station_complete$concentration_inter <- round(na_kalman(station_complete$Concentration, smooth = T),1)
+        station_complete$concentration_inter <- round(na_kalman(station_complete$Concentration, smooth = T),4)
         #ggplot_na_imputations(station_complete$Concentration, station_complete$concentration_inter)
         #statsNA(as.matrix(station_complete$concentration_inter))
         # aggregate by day, but need to round up if staying in 2019
@@ -76,6 +76,7 @@ for (chem_index in 1:length(chem_ids)){
           summarise(daily_concentration=mean(concentration_inter)) 
         # create the ts
         air_ts <- ts(air_daily$daily_concentration, frequency=7, start=c(2020, 9))
+        air_daily$daily_concentration
         ts_matrix[row_index:(row_index+n_days-1), chem_index] <- air_ts
         # Only need to do this once
         if (chem_index == 1){
@@ -97,7 +98,8 @@ df_ts
 dim(df_ts)
 
 # Next get traffic and COVID data.
-covid_df <- read_excel("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/covid/covid19be.xlsx")
+setwd(user_dir)
+covid_df <- read_excel("data/covid/covid19be.xlsx")
 names(covid_df) <- tolower(names(covid_df))
 head(covid_df)
 # aggregate the classes.
@@ -128,8 +130,9 @@ dim(df_ts)
 tunnels <- c("Tun VP - A12", "Tun Del - Parking",  "Tun Montg - Cambre", "Tun Ste OUT - Centre et Bas - Cambre", "Tun Lou IN - Bas - Midi et Cambre") 
 
 traffic_df <- read_excel(
-        path="d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/traffic/20210921-tunnels2019-sept2021.xlsx"
+        path="data/traffic/20210921-Tunnels2019-sept2021.xlsx"
         ) 
+dim(traffic_df)
 names(traffic_df) <- tolower(names(traffic_df))
 # first need to select the detector to use.
 traffic_summary <- traffic_df %>% dplyr::group_by(detector) %>% 
@@ -177,7 +180,7 @@ statsNA(as.matrix(detector_complete$volume))
 
 detector_complete <- detector_complete %>% 
     group_by(detector) %>% 
-    mutate(volume_inter=round(na_interpolation(volume), 1))
+    mutate(volume_inter=round(na_interpolation(volume), 4))
 
 detector_complete
 statsNA(as.matrix(detector_complete$volume_inter)) 
@@ -280,6 +283,6 @@ for (i in 1:nrow(train_subset)){
 # Number of stations times 1 times length of that series
 stopifnot(match_cnt == 41*30)
 # Should check out
-write_csv(df_join, file="../../../data/mvts_train/air_quality_bxl_all.csv")
-write_csv(train_subset, file="../../../data/mvts_train/air_quality_bxl_train.csv")
-write_csv(test_subset, file="../../../data/mvts_train/air_quality_bxl_test.csv")
+write_csv(df_join, file="data/mvts_train/air_quality_bxl_all.csv")
+write_csv(train_subset, file="data/mvts_train/air_quality_bxl_train.csv")
+write_csv(test_subset, file="data/mvts_train/air_quality_bxl_test.csv")
