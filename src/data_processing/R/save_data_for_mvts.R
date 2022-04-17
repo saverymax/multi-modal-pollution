@@ -189,7 +189,6 @@ statsNA(as.matrix(detector_complete$volume_inter))
 traffic_daily <- detector_complete %>% group_by(detector) %>% mutate(day=lubridate::ceiling_date(from, "day")) %>% group_by(day, .add=T) %>% 
   summarise(daily_volume=mean(volume_inter)) 
 
-View(traffic_daily)
 
 traffic_daily %>% group_by(detector) %>% summarise(n = n(), min=min(day), max=max(day))
 
@@ -208,7 +207,6 @@ head(rep_traffic)
 stopifnot(nrow(df_ts)==nrow(rep_traffic))
 df_join <- cbind(df_ts, rep_traffic)
 df_join$time <- rep(traffic_transpose$day, nrow(selected_stations))
-View(df_join)
 # Funny little bit of code to drop day.
 df_join <- df_join[!names(df_join) %in% c("day")]
 
@@ -286,3 +284,4 @@ stopifnot(match_cnt == 41*30)
 write_csv(df_join, file="data/mvts_train/air_quality_bxl_all.csv")
 write_csv(train_subset, file="data/mvts_train/air_quality_bxl_train.csv")
 write_csv(test_subset, file="data/mvts_train/air_quality_bxl_test.csv")
+
