@@ -16,11 +16,11 @@ library(forecast)
 # https://www.ifo.de/DocDL/cesifo1_wp1939.pdf
 # https://aip.scitation.org/doi/pdf/10.1063/1.5016666
 
-user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution/src/modelling"
+user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution"
 setwd(user_dir)
 
 # load covid data.
-covid_df <- read_excel("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/covid/covid19be.xlsx")
+covid_df <- read_excel("data/covid/covid19be.xlsx")
 head(covid_df)
 names(covid_df) <- tolower(names(covid_df))
 head(covid_df)
@@ -39,7 +39,7 @@ max(covid_subset$day)
 cov_ts <- ts(covid_subset$total_cases, frequency=7, start=c(2020, 9))
 length(cov_ts)
 #plot.ts(cov_ts)
-png(filename="d:/asus_documents/ku_leuven/thesis/figures/covid_ts/cov_ts.png", width=1000)
+png(filename="data/figures/covid_ts/cov_ts.png", width=1000)
 p <- ggplot(covid_subset, aes(x=day, y=total_cases)) +
     geom_line() + 
     ggtitle("Daily COVID-19 cases, Flanders") +
@@ -56,10 +56,10 @@ CADFtest(cov_ts, type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
 CADFtest(diff(cov_ts), type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
 # both are stationary
 
-png(filename="d:/asus_documents/ku_leuven/courses/time_series/project/figures/cov_acf.png")
+png(filename="data/figures/covid_ts/cov_acf.png")
 acf(cov_ts)
 dev.off()
-png(filename="d:/asus_documents/ku_leuven/courses/time_series/project/figures/cov_pacf.png")
+png(filename="data/figures/covid_ts/cov_pacf.png")
 pacf(cov_ts)
 dev.off()
 d_cov <- diff(cov_ts) 
@@ -71,7 +71,7 @@ pacf(diff(d_cov, 7))
 
 # then load the traffic data.
 traffic_df <- read_excel(
-        path="d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/traffic/20210921-tunnels2019-sept2021.xlsx"
+        path="data/traffic/20210921-Tunnels2019-sept2021.xlsx"
         ) 
 names(traffic_df) <- tolower(names(traffic_df))
 head(traffic_df)
@@ -83,8 +83,6 @@ traffic_summary <- traffic_df %>% dplyr::group_by(detector) %>%
 traffic_summary
 # using tun bel in because it has data for longest period with a high average
  detector_df <- traffic_df %>% dplyr::filter(detector=="Tun Bel IN")
-# TODO: Pick measurement station or aggregation method
-#detector_df <- traffic_df %>% dplyr::filter(detector=="Tun VP - A12")
 nrow(detector_df)
 detector_df$from <- ymd_hms(detector_df$from)
 min(detector_df$from)
@@ -109,6 +107,7 @@ statsNA(as.matrix(detector_complete$volume))
 # choice between linear, spline, and stineman interpolations
 # need to round for some reason.
 detector_complete$volume_inter <- round(na_interpolation(detector_complete$volume),1)
+detector_complete$volume_inter <- na_interpolation(detector_complete$volume)
 ggplot_na_imputations(detector_complete$volume, detector_complete$volume_inter)
 statsNA(as.matrix(detector_complete$volume_inter))
 
@@ -123,7 +122,7 @@ max(traffic_daily$day)
 traffic_ts <- ts(traffic_daily$daily_volume, frequency=7, start=c(2020, 9))
 stopifnot(length(traffic_ts)==458)
 
-png(filename="d:/asus_documents/ku_leuven/thesis/figures/traffic_ts/traffic_ts.png", width=1000)
+png(filename="data/figures/traffic_ts/traffic_ts.png", width=1000)
 p <- ggplot(traffic_daily, aes(x=day, y=daily_volume)) +
     geom_line() + 
     ggtitle("Daily traffic volume, Brussels Tunnel") +
@@ -146,55 +145,13 @@ acf(d_traffic)
 pacf(d_traffic)
 acf(diff(d_traffic, 7))
 pacf(diff(d_traffic))
-# remember to correct for residuals when testing for cointegration.
-
-# Testing for cointegration
-length(cov_ts)
-length(air_ts)
-length(diff(traffic_ts))
-# Set up dfs
-var_df_cov <- data.frame(air_ts, traffic_ts, cov_ts)
-var_df_no_cov <- data.frame(air_ts, traffic_ts)
-var_df_no_air <- data.frame(traffic_ts, cov_ts)
-# lag of 9
-names(var_df_cov)<-c("air","traffic", "covid")
-names(var_df_no_cov)<-c("air","traffic")
-names(var_df_no_air)<-c("traffic","covid")
-VARselect(var_df_cov,lag.max=10,type="const")
-# order 8
-VARselect(var_df_no_cov,lag.max=10,type="const")
-# by sic we select order 8
-VARselect(var_df_no_air,lag.max=10,type="const")
-# order 9
-
-# Testing cointegration
-# This first test is the most important, because we have to check if the two 
-# non-stationary series are cointegrated.
-trace1 <- ca.jo(var_df_no_air,type="trace",K=9,ecdet="const",spec="transitory")
-summary(trace1)
-# The result supposts cointegration with 1 test equation.
-trace2 <- ca.jo(var_df_cov,type="trace",K=8,ecdet="const",spec="transitory")
-summary(trace2)
-# When including that stationary air series, we get 2 test equations, though the second
-# is rather on the boundary b/w signficant and not
-# This test below is not necessary:
-trace3 <- ca.jo(var_df_no_cov,type="trace",K=8,ecdet="const",spec="transitory")
-summary(trace3)
-
-#repeat the same procedure using johansen’s maximum eigenvalue test statistic.
-# const is constant term in the long run relationshp
-# transitory means to not include a deterministic trend in the test equation.
-# we interpret this test as we did for the prvious test
-maxeigen_test <- ca.jo(var_df_no_air,type="eigen",K=9,ecdet="const",spec="transitory")
-summary(maxeigen_test)
-# we see that we reject no cointegration at the 1% level
 
 #############
 # VAR model, for each chemical and station of interest
 ############
 
 # Load selected stations as generated by station_select_for_mvts.R
-station_file="d:/asus_documents/ku_leuven/thesis/data/selected_stations_for_training.txt"
+station_file="data/selected_stations_for_training.txt"
 selected_stations <- read.table(station_file)
 names(selected_stations) <- c("station")
 selected_stations
@@ -211,17 +168,17 @@ chem_ids[[3]] <- 8
 for (chem_index in 1:length(chem_ids)){
     chem_id <- chem_ids[[chem_index]]
     chem <- names(chem_ids)[chem_index]
-    #if (chem != "NO2"){
+    print(chem)
+    #if (chem != "PM10"){
     #    next
     #}
-    print(chem)
     require(plyr)
-    setwd(paste("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air/time_series_brux_", chem_id, sep=""))
+    setwd(paste(user_dir, "/data/eea_air/time_series_brux_", chem_id, sep=""))
     air_df <- ldply(list.files(), read.csv, header=T)
     # this package does not play nice with dplyr, so unload once done.
     detach("package:plyr", unload=T)
     require(dplyr)
-    predictions_df <- data.frame(observed=vector(mode='numeric',length=length(air_ts)))
+    predictions_df <- data.frame(observed=vector(mode='numeric',length=length(traffic_ts)))
     for (station_id in 1:nrow(selected_stations)){
         current_station <- air_df %>% dplyr::filter(AirQualityStation %in% selected_stations$station[station_id])
         print(station_id)
@@ -230,7 +187,6 @@ for (chem_index in 1:length(chem_ids)){
         #}
         print(selected_stations$station[station_id])
         station_name <- selected_stations$station[station_id]
-        current_station$datetime <- ymd_hms(current_station$DatetimeBegin)
         current_station$datetime <- ymd_hms(current_station$DatetimeBegin)
         # need to do le and ge because of how the == is computed.
         station_subset <- current_station %>% dplyr::filter(datetime >= "2020-03-01" & datetime <= "2021-06-01")
@@ -242,7 +198,8 @@ for (chem_index in 1:length(chem_ids)){
         # choice between linear, spline, and stineman interpolations
         # need to round for some reason.
         #station_complete$concentration_inter <- round(na_interpolation(station_complete$Concentration),1)
-        station_complete$concentration_inter <- round(na_kalman(station_complete$Concentration, smooth = T),1)
+        #station_complete$concentration_inter <- round(na_kalman(station_complete$Concentration, smooth = T),1)
+        station_complete$concentration_inter <- round(na_kalman(station_complete$Concentration, smooth = T),4)
         #ggplot_na_imputations(station_complete$Concentration, station_complete$concentration_inter)
         #statsNA(as.matrix(station_complete$concentration_inter))
         # aggregate by day, but need to round up if staying in 2019
@@ -278,14 +235,17 @@ for (chem_index in 1:length(chem_ids)){
         
         # Generating predictions
         H <- c(1, 5, 10)
-        s <- round(0.75*length(air_ts))
+        # Hardcoding based on test split in save_data_for_mvts
+        s <- 361
+        #s <- round(0.75*length(air_ts))
         dm_tests <- matrix(nrow=length(H), ncol=3)
         oos_errors <- matrix(nrow=3, ncol=5)
         # Add observed values to df for easy error computation in evaluation script
-        predictions_df$observed <- air_daily$daily_concentration
+        observed_id <- paste(station_name, "_observed", sep="")
+        observed_id
+        predictions_df[observed_id] <- air_daily$daily_concentration
         for (i in 1:length(H)){
             h <- H[i]
-            print(h)
             error_cov <- c()
             error_nocov <- c()
             pred_id_cov <- paste(chem, "_", station_name, "_horizon-", h, "_cov", sep="")
@@ -301,6 +261,7 @@ for (chem_index in 1:length(chem_ids)){
                 fit_var_nocov <- VAR(var_df_no_cov_sub,type="const",p=8)
                 # predict h step ahead
                 predict_cov_out <- predict(fit_var_cov,n.ahead=h)
+                # The predictions will store all forecats up to/including h
                 predict_cov <- predict_cov_out[[1]][1]$air[h]
                 predict_nocov_out <- predict(fit_var_nocov,n.ahead=h)
                 predict_nocov <- predict_nocov_out[[1]][1]$air[h]
@@ -338,7 +299,8 @@ for (chem_index in 1:length(chem_ids)){
         
     }
     setwd(user_dir)
-    write.csv(predictions_df, paste("../../data/model_output/arima/", chem, "_VAR_forecasts.csv", sep=""), row.names = FALSE)
+    predictions_df <- predictions_df[!names(predictions_df) %in% c("observed")]
+    write.csv(predictions_df, paste("data/model_output/arima/", chem, "_VAR_forecasts.csv", sep=""), row.names = FALSE)
 }
         
 #########
