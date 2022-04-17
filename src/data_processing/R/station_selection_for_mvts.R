@@ -14,6 +14,8 @@ library(fGarch)
 library(kableExtra)
 library(forecast)
 
+user_dir = "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution"
+setwd(user_dir)
 
 # chem_names <- c("PM25", "SO2", "PM10", "NO2", "NOX", "CO")
 # Only using these three, based off observations in plots from brussels_pollutants_ts_plots.R
@@ -34,7 +36,7 @@ for (chem_index in 1:length(chem_ids)){
     chem <- names(chem_ids)[chem_index]
     print(chem)
     require(plyr)
-    setwd(paste("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air/time_series_brux_", chem_id, sep=""))
+    setwd(paste("data/eea_air/time_series_brux_", chem_id, sep=""))
     air_df <- ldply(list.files(), read.csv, header=T)
     # this package does not play nice with dplyr, so unload once done.
     detach("package:plyr", unload=T)
@@ -50,7 +52,7 @@ for (chem_index in 1:length(chem_ids)){
                 max_date=max(DatetimeBegin)) %>% 
       arrange(desc(length), desc(avg_conc))
      
-    output_file <- paste("d:/asus_documents/ku_leuven/thesis/data/", "top_stations_", chem, ".txt", sep="")
+    output_file <- paste("data/", "top_stations_", chem, ".txt", sep="")
     # iterate by the stations with the most observations and avg concentration
     for (station_id in 1:nrow(air_summary)){
         current_station <- air_df %>% dplyr::filter(AirQualityStation %in% air_summary$AirQualityStation[station_id])
@@ -79,7 +81,7 @@ for (chem_index in 1:length(chem_ids)){
     chem <- names(chem_ids)[chem_index]
     print(chem)
     require(plyr)
-    setwd(paste("d:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air/time_series_brux_", chem_id, sep=""))
+    setwd(paste("data/eea_air/time_series_brux_", chem_id, sep=""))
     air_df <- ldply(list.files(), read.csv, header=T)
     # this package does not play nice with dplyr, so unload once done.
     detach("package:plyr", unload=T)
@@ -94,7 +96,7 @@ for (chem_index in 1:length(chem_ids)){
                 max_date=max(DatetimeBegin)) %>% 
       arrange(desc(length), desc(avg_conc))
      
-    output_file <- paste("d:/asus_documents/ku_leuven/thesis/data/", "top_stations_", chem, ".txt", sep="")
+    output_file <- paste("data/", "top_stations_", chem, ".txt", sep="")
     # iterate by the stations with the most observations and avg concentration
     for (station_id in 1:nrow(air_summary)){
         current_station <- air_df %>% dplyr::filter(AirQualityStation %in% air_summary$AirQualityStation[station_id])
@@ -119,5 +121,5 @@ station_list
 
 selected_stations <- Reduce(intersect, station_list)
 selected_stations
-station_file="d:/asus_documents/ku_leuven/thesis/data/selected_stations_for_training.txt"
+station_file="data/selected_stations_for_training.txt"
 write(selected_stations, file=station_file)
