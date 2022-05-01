@@ -103,7 +103,6 @@ covid_df <- read_excel("data/covid/covid19be.xlsx")
 names(covid_df) <- tolower(names(covid_df))
 head(covid_df)
 # aggregate the classes.
-covid_df %>% group_by()
 covid_flanders <- covid_df %>% dplyr::filter(region=="Flanders") %>% 
     mutate(day=lubridate::ceiling_date(date, "day")) %>% 
     group_by(day) %>% summarise(total_cases=sum(cases))
@@ -127,7 +126,9 @@ dim(df_ts)
 # https://data.mobility.brussels/mobigis/?x=485351&y=6593040&zoom=12&baselayer=urbis_grey&layers=traffic_live_geom%3BTunnels%3B
 # Tunnels in entry points of brussels:
 # Was going to include "Tun Terv - Centre" but not enough data
-tunnels <- c("Tun VP - A12", "Tun Del - Parking",  "Tun Montg - Cambre", "Tun Ste OUT - Centre et Bas - Cambre", "Tun Lou IN - Bas - Midi et Cambre") 
+tunnels <- c("Tun VP - A12", "Tun Del - Parking",  "Tun Montg - Cambre", 
+             "Tun Ste OUT - Centre et Bas - Cambre", 
+             "Tun Lou IN - Bas - Midi et Cambre") 
 
 traffic_df <- read_excel(
         path="data/traffic/20210921-Tunnels2019-sept2021.xlsx"
