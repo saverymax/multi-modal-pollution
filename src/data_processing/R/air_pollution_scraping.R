@@ -7,7 +7,7 @@ library(httr)
 library(XML)
 # Queries can be generated at 
 # https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm
-# This below url is for 2019-2020, E2a, BE, and will provide data from all 
+# The scraping url below is for 2019-2022, E2a, BE, and will provide data from all 
 # testing stations. However it's pretty easy to customize
 # According to the EEA: 
 # Data available in this service comes from two dataflows: 
