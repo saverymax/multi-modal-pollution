@@ -1,25 +1,27 @@
-# DATA
-All data except Sentinel-5P data can be found the the data repository. The Sentinel-5P data must be downloaded and processed yourself, though there may be a shared drive made available for this data.
+# Data
+This section describes the data and the data collection process for collecting the data necessary to forecast air pollution in Brussels.
+
+All data except the EEA air pollution data can be found in the [data repository](https://github.com/saverymax/multi-modal-pollution/tree/main/data). The EEA data for Brussels can be found at [this OSF repository](https://osf.io/j94pv/). Use of the data files will be provided in the modelling and experimentation sections of this documentation.
 
 ## EEA Air pollution
 
-The data can be downloaded from https://eur-lex.europa.eu/eli/dir/2008/50/2015-0
+The data can be downloaded [here](https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm)
 9-18 using the air quality measurement stations as mandated by Directive
-2008/50/EC of the European Parliament.
+2008/50/EC of the European Parliament. [This script](https://github.com/saverymax/multi-modal-pollution/blob/main/src/data_processing/R/air_pollution_scraping.R) will scrape the data automatically for Brussel. Note that the data in the OSF repository is the product of this script and can be fed directly to the [VAR model](https://github.com/saverymax/multi-modal-pollution/blob/main/src/modelling/VAR_modelling.R) or to the data processing script described below.
 
 ## COVID-19
 
 Belgium COVID-19 data is available at https://epistat.sciensano.be/Data/COVID19BE.xlsx. The description of the variables can be found in https://epistat.sciensano.be/COVID19BE_codebook.pdf and other dataset information at https://epistat.wiv-isp.be/covid/.
 
-## Traffic Counts
-Data provided by Bruxelles Mobilite upon request. 
+We provide the data in [this repository](https://github.com/saverymax/multi-modal-pollution/tree/main/data/covid).
 
-The tunnels of interest can be found at https://data.mobility.brussels/mobigis/?x=485351&y=6593040&zoom=12&baselayer=urbis_grey&layers=traffic_live_geom%3BTunnels%3B. We selected those that were at main entry points to the city. See the ARIMA R scripts for processing of the data.
+## Traffic volume
+Data provided by Bruxelles Mobilite upon request, [available here](https://github.com/saverymax/multi-modal-pollution/tree/main/data/traffic).
 
-## Sentinel-5p
+The tunnels of interest can be [visualized here](https://data.mobility.brussels/mobigis/?x=485351&y=6593040&zoom=12&baselayer=urbis_grey&layers=traffic_live_geom%3BTunnels%3B).
 
-GeoJson file for Brussels generated using the tool http://geojson.io/#map=11/50.8053/4.2668. We selected a rectangular polygon that contained the majority of the tunnels included in our analysis.
+## Data processing
 
-Run from https://github.com/bilelomrani1/s5p-tools. Analytic tools available at https://github.com/bilelomrani1/s5p-analysis
+Data processing scripts used in this work are provided in [src/data_processing/R](https://github.com/saverymax/multi-modal-pollution/tree/main/src/data_processing/R). Scripts there include the EEA data scraping script, plotting scripts to visualize the air pollutants, COVID-19, and traffic data.
 
-
+Importantly, there are two scripts named station_selection_for_mvts.R and save_data_for_mvts.R. If you want to reproduce our work with the transformer and regenerate the training/testing data we use, first run station_selection_for_mvts.R and then save_data_for_mvts.R. This will first select the 41 stations by criteria of complete data and then generate the training and testing data, as described in the thesis work associated with this project. This, of course, requires the data scraping to be done first, or to download the OSF data (which is the product of the scraping script).
