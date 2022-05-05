@@ -60,10 +60,14 @@ forecast_analysis <- function(){
                 tf_mae_vec <- rowMeans(abs(tf_error))
                 # latex output breaks when there is _
                 oos_errors[, e_index] <- tf_mae_vec
+                # Format for column names
                 if (mask == "mask_none"){
-                    mask = "no mask"
+                    mask = "No mask"
+                } else{
+                    mask = "Mask"
                 }
-                oos_col_names[e_index+1] <- paste("Horizon", h, mask, sep=" ")
+                oos_col_names[e_index+1] <- paste(mask, sep=" ")
+                #oos_col_names[e_index+1] <- paste("Horizon", h, mask, sep=" ")
             }
         }
         #apply(oos_errors, which.min, margin=1) 
@@ -84,10 +88,12 @@ forecast_analysis <- function(){
         oos_df <- oos_df %>%
             select(station, everything())
         colnames(oos_df) <- oos_col_names
-        caption <- paste("Out-of-sample errors when forecast mask is removed, for pollutant ", chem, sep="")
+        caption <- paste("Out-of-sample MAE when forecast mask is removed, for pollutant ", 
+                         toupper(chem),". Lowest MAE is in bold, per station", sep="")
         label <- paste("forecast_mask_", chem, sep="")
-        print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
-                  kable_styling(latex_options = "HOLD_position")
+        print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, align=c("lcccc")) %>% 
+                  kable_styling(latex_options = "HOLD_position") %>% 
+                  add_header_above(c(" " = 1, "H=0" = 2, "H=1" = 2))
                   )
     }        
 }

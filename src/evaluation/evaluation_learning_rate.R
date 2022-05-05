@@ -21,7 +21,7 @@ source("evaluation_data_functions.R")
 
 main_analysis <- function(){
     # To generate tests for stationarity of errors
-    run_adf = FALSE
+    run_adf = TRUE
     
     chem_names <- c("pm25", "pm10", "no2")
     chem_ids <- vector(mode="list", length=length(chem_names))
@@ -29,11 +29,12 @@ main_analysis <- function(){
     chem_ids[[1]] <- 6001
     chem_ids[[2]] <- 5
     chem_ids[[3]] <- 8
-     #learning_rate <- "_lre5_no_station" # "" or _lre4 or _lre5 or _lre4_no_station
     learning_rate <- c("_lre4_no_station", "_lre5_no_station")
     for (lr_index in 1:length(learning_rate)){
         lr <- learning_rate[lr_index]
         H <- c(1, 5, 10)
+        # 2 columns, for rmse and mae
+        mean_diffs <- matrix(nrow=length(chem_ids), ncol=2)
         for (chem_index in 1:length(chem_ids)){
             chem_id <- chem_ids[[chem_index]]
             chem <- names(chem_ids)[chem_index]
@@ -111,6 +112,15 @@ main_analysis <- function(){
                 oos_errors[, 2] <- tf_mae_vec
                 oos_errors[, 3] <- var_rmse_vec
                 oos_errors[, 4] <- var_mae_vec
+                
+                if (h == 1){
+                    # Generate mean difference between var and tf, for each rmse and mae.
+                    rmse_diff <- mean(oos_errors[,1] - oos_errors[,3])
+                    mae_diff <- mean(oos_errors[,2] - oos_errors[,4])
+                    mean_diffs[chem_index, 1] <- rmse_diff
+                    mean_diffs[chem_index, 2] <- mae_diff
+                }
+ 
                 oos_errors <- round(oos_errors, 3)
                 # Bold the lowest RMSE and MAE
                 for (i in 1:nrow(oos_errors)){
@@ -137,7 +147,9 @@ main_analysis <- function(){
                 # Move station id to front
                 oos_df <- oos_df %>%
                     select(station, everything())
-                new_names <- c("Station", "TF RMSE", "TF MAE", "VAR RMSE", "VAR MAE")
+                
+                # Then format for latex output 
+                new_names <- c("Station", "RMSE", "MAE", "RMSE", "MAE")
                 #new_names <- c("TF H-1 RMSE", "TF H-1 MAE", "VAR H-1 RMSE", "VAR H-1 MAE", 
                 #               "TF H-5 RMSE", "TF H-5 MAE", "VAR H-5 RMSE", "VAR H-5 MAE", 
                 #               "TF H-10 RMSE", "TF H-10 MAE", "VAR H-10 RMSE", "VAR H-10 MAE", 
@@ -151,13 +163,15 @@ main_analysis <- function(){
                    lr_text <- "1e-4" 
                 }
                 caption <- paste("Out-of-sample errors for ", toupper(chem), ", horizon ", h, 
-                             "and learning rate ", lr_text, " compared to VAR model.", sep="")
+                             ", and transformer learning rate ", lr_text, " compared to VAR model.", sep="")
                 label <- paste("lr-", lr_text, "_", chem, "_h-", h, sep="")
-                print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
-                  kable_styling(latex_options = "HOLD_position")
+                print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, 
+                          align=c('lcccc')) %>% 
+                  kable_styling(latex_options = "HOLD_position") %>% 
+                  add_header_above(c(" " = 1, "Transformer" = 2, "VAR" = 2))
                   )
                 
-                # Finally, compute diebold mariano with bartlett variance estimator for each station, given a horizon.
+               # Finally, compute diebold mariano with bartlett variance estimator for each station, given a horizon.
                 dm_vec <- mapply(function(tf, var){dm.test(tf, var, h=h, power=1, varestimator="bartlett")$p.value[[1]]}, 
                                 split(tf_error, row(tf_error)), split(var_error, row(var_error)))
                 dm_tests[, h_index] <- dm_vec
@@ -175,7 +189,7 @@ main_analysis <- function(){
                 #    dm_tests[i, h_index] <- dm_row
                 #        }
             }
-        
+            
             # Then prepare the DM output 
             dm_tests <- round(dm_tests, 3)
             col <- seq_len(ncol(dm_tests))
@@ -193,23 +207,38 @@ main_analysis <- function(){
             # Move station id to front
             dm_df <- dm_df %>%
                 select(station, everything())
-            names(dm_df) <- c("Station", "H1", "H5", "H10")
-            caption <- "Diebold Mariano tests for comparing VAR and transformer between stations and horizons"
+            names(dm_df) <- c("Station", "H=1", "H=5", "H=10")
+            caption <- paste("Diebold Mariano tests comparing VAR and transformer with learning rate ",
+                             lr_text, ", for each station and horizon, for pollutant ", toupper(chem), sep="")
             label <- paste("dm_tests_lr-", lr_text, "_", chem, sep="")
-                print(kbl(oos_df, booktabs = t, escape=f, caption=caption, label=label) %>% 
-                  kable_styling(latex_options = "hold_position")
+                print(kbl(dm_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
+                  kable_styling(latex_options = "HOLD_position")
                   )
                 
-            if (run_adf==t){
-                stationary_df <- as.data.frame(stationary_tests)
+            if (run_adf==TRUE){
+                stationary_df <- as.data.frame(round(stationary_tests,3))
                 stationary_df$station <- station_names
                 stationary_df <- stationary_df %>%
                     select(station, everything())
-                names(stationary_df) <- c("station", "h1", "h5", "h10")
-                print("augmented dickey fuller test for stationarity")
-                print(kbl(stationary_df, booktabs = t))
+                names(stationary_df) <- c("Station", "H=1", "H=5", "H=10")
+                caption = paste("Augmented Dickey Fuller test for stationarity, for pollutant ", 
+                                toupper(chem), ", and learning rate ", lr_text, sep="")
+                label <- paste("adf_station_", chem, "_lr_", lr_text, sep="")
+                print(kbl(stationary_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
+                          kable_styling(latex_options = "HOLD_position")
+                )
             }
         }
+        # Prepare mean difference output
+        mean_diffs <- round(mean_diffs, 3)
+        mean_df <- as.data.frame(mean_diffs) 
+        names(mean_df) <- c("RMSE", "MAE")
+        caption <- paste("Mean difference between VAR and transformer in terms 
+                         of MAE and RMSE, for horizon 1 and learning rate ", lr_text, sep="")
+        label <- paste("mean_df_lr_", lr_text, sep="")
+        print(kbl(mean_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
+          kable_styling(latex_options = "HOLD_position")
+          )
     }
 }
 main_analysis()

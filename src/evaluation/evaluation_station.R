@@ -108,18 +108,20 @@ station_analysis <- function(){
             # Move station id to front
             oos_df <- oos_df %>%
                 select(station, everything())
-            new_names <- c("Station", "TF w/ station RMSE", "TF w/ station MAE", "Tf w/o station RMSE", "Tf w/o station MAE")
+            new_names <- c("Station", "RMSE", "MAE", "RMSE", "MAE")
             #new_names <- c("TF H-1 RMSE", "TF H-1 MAE", "VAR H-1 RMSE", "VAR H-1 MAE", 
             #               "TF H-5 RMSE", "TF H-5 MAE", "VAR H-5 RMSE", "VAR H-5 MAE", 
             #               "TF H-10 RMSE", "TF H-10 MAE", "VAR H-10 RMSE", "VAR H-10 MAE", 
             #               paste("Station measuring", chem))
             #new_names <- c("H-1 RMSE", "H-1 MAE", "H-5 RMSE", "H-5 MAE", "H-10 RMSE", "H-10 MAE", paste("Station measuring", chem))
             colnames(oos_df) <- new_names
-            caption <- paste("Out-of-sample errors for", chem, "for horizon", h, 
-                             "when comparing effect of Station identification variable.")
+            caption <- paste("Out-of-sample errors for", toupper(chem), "for horizon", h, 
+                             "when comparing effect of station identification variable.")
             label <- paste("station_", chem, "_h-", h, sep="")
-            print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
-              kable_styling(latex_options = "HOLD_position")
+            print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, 
+                      align=c('lcccc')) %>% 
+              kable_styling(latex_options = "HOLD_position") %>%  
+                  add_header_above(c(" " = 1, "w/ station" = 2, "w/o station" = 2))
               )
             
             # Finally, compute diebold mariano with bartlett variance estimator for each station, given a horizon.
@@ -142,7 +144,6 @@ station_analysis <- function(){
         }
     
         # Then prepare the DM output 
-        print(paste("Tests for chem", chem))
         dm_tests <- round(dm_tests, 3)
         col <- seq_len(ncol(dm_tests))
         for (i in 1:nrow(dm_tests)){
@@ -159,7 +160,7 @@ station_analysis <- function(){
         # Move station id to front
         dm_df <- dm_df %>%
             select(station, everything())
-        names(dm_df) <- c("Station", "H1", "H5", "H10")
+        names(dm_df) <- c("Station", "H=1", "H=5", "H=10")
         caption <- paste("Diebold Mariano tests comparing models with and without station variable for each horizon")
         label <- paste("dm_station_", chem, sep="")
         print(kbl(dm_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
@@ -170,7 +171,7 @@ station_analysis <- function(){
             stationary_df$station <- station_names
             stationary_df <- stationary_df %>%
                 select(station, everything())
-            names(stationary_df) <- c("Station", "H1", "H5", "H10")
+            names(stationary_df) <- c("Station", "H=1", "H=5", "H=10")
             caption = "Augmented Dickey Fuller test for stationarity"
             label <- paste("adf_station_", chem, sep="")
             print(kbl(stationary_df, booktabs = T, escape=F, caption=caption, label=label) %>% 

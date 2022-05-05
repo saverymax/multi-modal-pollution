@@ -21,15 +21,15 @@ source("evaluation_data_functions.R")
 
 ablation_analysis <- function(){
     
-    var_ablate <- c("all", "covid", "pm10", "pm25")
+    var_ablate <- c("none", "covid", "pm10", "pm25", "tunnels", "all")
     learning_rate <- "_lre4" 
     # These were only run with 1 step ahead
     h <- 1
     chem <- "no2"
-    oos_errors <- matrix(nrow=41, ncol=4)
+    oos_errors <- matrix(nrow=41, ncol=6)
     for (v_index in 1:length(var_ablate)){
         v <- var_ablate[v_index]
-        if (v == "all"){
+        if (v == "none"){
             filepath <- paste("../../data/model_output/mvts/forecast_out_bxl_eval", 
                           learning_rate, "_no_station_h-", h, "_", chem, ".csv", sep="")
         } else{
@@ -57,11 +57,12 @@ ablation_analysis <- function(){
     }
     oos_errors <- round(oos_errors, 3)
     col <- seq_len(ncol(oos_errors))
+    col
+    # Bold the largest increases
     for (i in 1:nrow(oos_errors)){
         j <- which.max(oos_errors[i,])
         oos_errors[i,] <- oos_errors[i,] %>% cell_spec(bold = col == j)
     }
-    #oos_errors %>% kable(booktabs = TRUE, escape = FALSE) 
     oos_df <- as.data.frame(oos_errors)
     # Station id will be indexed correctly to account for station order
     split_names <- str_split(tf_preds$station_id, "_")
@@ -71,13 +72,16 @@ ablation_analysis <- function(){
     # Move station id to front
     oos_df <- oos_df %>%
         select(station, everything())
-    new_names <- c("Station", "All vars", "w/o Covid", "w/o PM10", "w/o PM25")
+    new_names <- c("Station", "None removed", "COVID", "PM10", "PM25", "Tunnels", "Only NO2 included") 
     colnames(oos_df) <- new_names
-    caption <- paste("Out-of-sample errors when variables are iteratively removed, for pollutant ", chem, 
-                     ". Results for only horizon 1 are shown.", sep="")
+    caption <- paste("Out-of-sample MAE when variables are removed, 
+                     when forecasting pollutant ", toupper(chem), 
+                     ". Results for only horizon 1 are shown. 
+                     Values with highest MAE per station are in bold", sep="")
     label <- paste("ablation_", chem, sep="")
     # Need to escape if outputing bold letters.
-    print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
+    print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, 
+              align=c("lcccccc")) %>% 
               kable_styling(latex_options = "HOLD_position")
               )
 }
