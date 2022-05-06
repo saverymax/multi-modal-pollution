@@ -14,7 +14,6 @@ Welcome to multi-modal-pollution's documentation!
     data_processing.md
     modelling.md
     experimentation.md
-    lab_notebook.md
 
 Indices and tables
 ==================
