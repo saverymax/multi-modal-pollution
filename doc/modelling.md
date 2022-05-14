@@ -18,7 +18,9 @@ The model forecasts can be found in the [data/model_output/arima directory](http
 
 ## Transformer
 
-The transformer code can be found in the repository https://github.com/saverymax/mvts_transformer, forked from https://github.com/gzerveas/mvts_transformer. In this code you can specify the options for pretraining, regression, or classification, as in the original repository, with any of the original datasets. But now, it is also possible to utilize our implementation of multivariate forecasting. Basic usage of the transformer is described there.
+The transformer code can be found in [our repository](https://github.com/saverymax/mvts_transformer), forked from https://github.com/gzerveas/mvts_transformer. In this code you can specify the options for pretraining, regression, or classification, as in the original repository, with any of the original datasets. 
+
+But now, it is also possible to utilize our implementation of multivariate forecasting. Basic usage of the transformer in this capacity is described there.
 
 In this work, we generate the transformer forecasts in two steps. We first finetune the model, using the experiment cripts in [the mvts repository](https://github.com/saverymax/mvts_transformer/tree/master/experiments/generated_experiments/finetune). We then use these models to generate the forecasts using [the scripts here](https://github.com/saverymax/mvts_transformer/tree/master/experiments/generated_experiments/eval). It is simpler to break up the training and testing in to a two-step process so we can evaluate the finetuning of the model before generating forecasts on the test set.
 

@@ -1,6 +1,6 @@
 # Introduction
 
-This is the documentation for data and code used in the Master thesis of Max Savery, titled "Forecasting Air Pollution During the COVID-19 Lockdowns in Brussels".
+This is the documentation for data and code used in the Master thesis of Max Savery, titled "Forecasting Air Pollution During the COVID-19 Lockdowns in Belgium".
 
 In this documentation, we discuss the following topics:
 1. What data we used, where to get the data, and how to process the data   

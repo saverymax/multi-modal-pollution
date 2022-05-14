@@ -22,5 +22,5 @@ If you would like to look at an interactive report detailing the training and va
 
 The evaluation of the models can be conducted using [these scripts](https://github.com/saverymax/multi-modal-pollution/tree/main/src/evaluation).
 
-You can generate the results for each experiment using the standalone R scripts. Furthermore, you can generate all experimental results in [the RNarkdown script](https://github.com/saverymax/multi-modal-pollution/blob/main/src/evaluation/evaluation.RMD). This also includes all text found in the results
+You can generate the results for each experiment using the standalone R scripts. Furthermore, you can generate all experimental results in [the RMarkdown script](https://github.com/saverymax/multi-modal-pollution/blob/main/src/evaluation/evaluation.RMD). This also includes all text found in the results
 section of the thesis.
