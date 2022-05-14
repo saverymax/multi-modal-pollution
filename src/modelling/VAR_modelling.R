@@ -11,6 +11,7 @@ library(vars)
 library(imputeTS)
 library(kableExtra)
 library(forecast)
+library(scales)
 
 # Interesting sources on VECM vs VAR
 # https://www.ifo.de/DocDL/cesifo1_wp1939.pdf
@@ -38,36 +39,50 @@ max(covid_subset$day)
 # create covid ts
 cov_ts <- ts(covid_subset$total_cases, frequency=7, start=c(2020, 9))
 length(cov_ts)
-#plot.ts(cov_ts)
-png(filename="data/figures/covid_ts/cov_ts.png", width=1000)
+
+png(filename="data/figures/covid_ts/levels_Flanders_ts.png", width=700)
 p <- ggplot(covid_subset, aes(x=day, y=total_cases)) +
     geom_line() + 
     ggtitle("Daily COVID-19 cases, Flanders") +
-    xlab("2020") +
-    ylab("Daily cases")
-p
+    xlab("Date") +
+    ylab("Daily cases") + 
+    theme_bw() +
+    theme(title = element_text(size=24), 
+                       axis.text.y = element_text(size = 22),
+                       axis.text.x = element_text(size = 22, angle=45, vjust = .6))
+p        
 dev.off()
 
-plot.ts(cov_ts)
-
-# test for non stationarity
-cov_max_lag=round(sqrt(length(cov_ts)))
-CADFtest(cov_ts, type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
-CADFtest(diff(cov_ts), type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
-# both are stationary
+diff_df <- data.frame(y=diff(covid_subset$total_cases))
+diff_df$x <- covid_subset$day[2:nrow(covid_subset)]
+png(filename="data/figures/covid_ts/diff_Flanders_ts.png", width=700)
+p <- ggplot(diff_df, aes(x=x, y=y)) +
+    geom_line() + 
+    ggtitle("Daily COVID-19 cases in differences, Flanders") +
+    xlab("Date") +
+    ylab("Daily cases") + 
+    theme_bw() +
+    theme(title = element_text(size=24), 
+                       axis.text.y = element_text(size = 22),
+                       axis.text.x = element_text(size = 22, angle=45, vjust = .6))
+p        
+dev.off()
 
 png(filename="data/figures/covid_ts/cov_acf.png")
-acf(cov_ts)
+acf(cov_ts, main="COVID autocorrelation")
 dev.off()
 png(filename="data/figures/covid_ts/cov_pacf.png")
-pacf(cov_ts)
+pacf(cov_ts, main="COVID partial autocorrelation")
 dev.off()
 d_cov <- diff(cov_ts) 
-acf(d_cov)
-pacf(d_cov)
+png(filename="data/figures/covid_ts/diff_cov_acf.png")
+acf(d_cov, main="COVID autocorrelation after differencing")
+dev.off()
+png(filename="data/figures/covid_ts/diff_cov_pacf.png")
+pacf(d_cov, main="COVID partial autocorrelation after differencing")
+dev.off()
 acf(diff(d_cov, 7))
 pacf(diff(d_cov, 7))
-
 
 # then load the traffic data.
 traffic_df <- read_excel(
@@ -106,7 +121,6 @@ statsNA(as.matrix(detector_complete$volume))
 # run imputations
 # choice between linear, spline, and stineman interpolations
 # need to round for some reason.
-detector_complete$volume_inter <- round(na_interpolation(detector_complete$volume),1)
 detector_complete$volume_inter <- na_interpolation(detector_complete$volume)
 ggplot_na_imputations(detector_complete$volume, detector_complete$volume_inter)
 statsNA(as.matrix(detector_complete$volume_inter))
@@ -122,29 +136,59 @@ max(traffic_daily$day)
 traffic_ts <- ts(traffic_daily$daily_volume, frequency=7, start=c(2020, 9))
 stopifnot(length(traffic_ts)==458)
 
-png(filename="data/figures/traffic_ts/traffic_ts.png", width=1000)
+png(filename="data/figures/traffic_ts/traffic_acf.png")
+acf(traffic_ts, main="Traffic autocorrelation")
+dev.off()
+png(filename="data/figures/traffic_ts/traffic_pacf.png")
+pacf(traffic_ts, main="Traffic partial autocorrelation")
+dev.off()
+png(filename="data/figures/traffic_ts/diff_traffic_acf.png")
+acf(diff(traffic_ts), main="Traffic autocorrelation after differencing")
+dev.off()
+png(filename="data/figures/traffic_ts/diff_traffic_pacf.png")
+pacf(diff(traffic_ts), main="Traffic partial autocorrelation after differencing")
+dev.off()
+
+png(filename="data/figures/traffic_ts/traffic_bel.png", width=700)
 p <- ggplot(traffic_daily, aes(x=day, y=daily_volume)) +
     geom_line() + 
-    ggtitle("Daily traffic volume, Brussels Tunnel") +
-    xlab("2020") +
-    ylab("Daily volume")
+    ggtitle("Daily traffic volume, Belliard Tunnel") +
+    xlab("Date") +
+    ylab("Daily volume") + theme_bw() +
+    theme(title = element_text(size=24), 
+          axis.text.y = element_text(size = 22),
+          axis.text.x = element_text(size = 22, angle=45, vjust = .6))
 p
 dev.off()
+
+diff_df <- data.frame(y=diff(traffic_daily$daily_volume))
+diff_df$x <- traffic_daily$day[2:nrow(traffic_daily)]
+png(filename="data/figures/traffic_ts/diff_traffic_bel.png", width=700)
+p <- ggplot(diff_df, aes(x=x, y=y)) +
+    geom_line() + 
+    ggtitle("Daily traffic volume in differences, Belliard Tunnel") +
+    xlab("Date") +
+    ylab("Daily volume") +
+    theme_bw() +
+    theme(title = element_text(size=23), 
+          axis.text.y = element_text(size = 22),
+          axis.text.x = element_text(size = 22, angle=45, vjust = .6))
+p        
+dev.off()
+
+
+# test for non stationarity
+cov_max_lag=round(sqrt(length(cov_ts)))
+CADFtest(cov_ts, type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
+CADFtest(diff(cov_ts), type= "drift", criterion= "BIC", max.lag.y=cov_max_lag)
+# both are stationary
 
 # test for non stationarity
 tf_max_lag=round(sqrt(length(traffic_ts)))
 CADFtest(traffic_ts, type= "drift", criterion= "BIC", max.lag.y=tf_max_lag)
 CADFtest(diff(traffic_ts), type= "drift", criterion= "BIC", max.lag.y=tf_max_lag)
-# in differences we have stationarity. in levels we do not
-# for the air time series, it was stationary for both.
+# both are stationary
 
-acf(traffic_ts)
-pacf(traffic_ts)
-d_traffic <- diff(traffic_ts) 
-acf(d_traffic)
-pacf(d_traffic)
-acf(diff(d_traffic, 7))
-pacf(diff(d_traffic))
 
 #############
 # VAR model, for each chemical and station of interest
@@ -165,13 +209,12 @@ chem_ids[[1]] <- 6001
 chem_ids[[2]] <- 5
 chem_ids[[3]] <- 8
 
+adf <- TRUE
+
 for (chem_index in 1:length(chem_ids)){
     chem_id <- chem_ids[[chem_index]]
     chem <- names(chem_ids)[chem_index]
     print(chem)
-    #if (chem != "PM10"){
-    #    next
-    #}
     require(plyr)
     setwd(paste(user_dir, "/data/eea_air/time_series_brux_", chem_id, sep=""))
     air_df <- ldply(list.files(), read.csv, header=T)
@@ -179,6 +222,7 @@ for (chem_index in 1:length(chem_ids)){
     detach("package:plyr", unload=T)
     require(dplyr)
     predictions_df <- data.frame(observed=vector(mode='numeric',length=length(traffic_ts)))
+    adf_tests <- matrix(nrow=nrow(selected_stations), ncol=2)
     for (station_id in 1:nrow(selected_stations)){
         current_station <- air_df %>% dplyr::filter(AirQualityStation %in% selected_stations$station[station_id])
         print(station_id)
@@ -207,6 +251,15 @@ for (chem_index in 1:length(chem_ids)){
           summarise(daily_concentration=mean(concentration_inter)) 
         # create the ts
         air_ts <- ts(air_daily$daily_concentration, frequency=7, start=c(2020, 9))
+        # Check for stationarity of srations if specified:
+        if (adf == TRUE){
+            air_max_lag=round(sqrt(length(air_ts)))
+            adf_levels <- CADFtest(air_ts, type= "drift", criterion= "BIC", max.lag.y=air_max_lag)$p.value
+            adf_diff <- CADFtest(diff(air_ts), type= "drift", criterion= "BIC", max.lag.y=air_max_lag)$p.value
+            adf_tests[station_id, 1] <- adf_levels
+            adf_tests[station_id, 2] <- adf_diff
+        }
+
  
         # Going in differences for the non-stationary series
         # Need to remove first measurement from stationary series
@@ -228,10 +281,6 @@ for (chem_index in 1:length(chem_ids)){
         ccf(var2_residuals[,1],var2_residuals[,2])
         ccf(var2_residuals[,1],var2_residuals[,3])
         ccf(var2_residuals[,2],var2_residuals[,3])
-        
-        # we then examine the impulse function
-        #irf_var<-irf(fit_var2,ortho=F,boot=T)
-        #plot(irf_var)
         
         # Generating predictions
         H <- c(1, 5, 10)
@@ -284,8 +333,8 @@ for (chem_index in 1:length(chem_ids)){
             oos_errors[i, 4] <- nocov_mape
             oos_errors[i, 5] <- nocov_rmse
             dm_tests[i, 1] <- h
-            dm_tests[i, 2] <- dm.test(error_cov, error_nocov,h=h,power=1)$p.value[[1]]
-            dm_tests[i, 3] <- dm.test(error_cov, error_nocov,h=h,power=2)$p.value[[1]]
+            dm_tests[i, 2] <- dm.test(error_cov, error_nocov,h=h,power=1, varestimator = "bartlett")$p.value[[1]]
+            dm_tests[i, 3] <- dm.test(error_cov, error_nocov,h=h,power=2, varestimator = "bartlett")$p.value[[1]]
         }
         oos_errors
         dm_tests
@@ -298,110 +347,22 @@ for (chem_index in 1:length(chem_ids)){
         print(kbl(dm_df, booktabs = T, format="latex"))
         
     }
+    adf_df <- as.data.frame(adf_tests) 
+    adf_df$station <- selected_stations$station
+    # Move station id to front
+    adf_df <- adf_df %>%
+        dplyr::select(station, everything()) 
+    names(adf_df) <- c("Station", "Levels", "Differences")
+    # Nice function for formatting p-values
+    adf_df %>% mutate(Levels = scales::pvalue(Levels), Differences = scales::pvalue(Differences)) -> adf_df
+    caption <- paste("ADF tests for each station, pollutant ", toupper(chem), sep="")
+    label <- paste("adf_chem_", chem, sep="")
     setwd(user_dir)
+    adf_file <- paste("data/adf_tables/", label, ".txt", sep="")
+    adf_out <- kbl(adf_df, booktabs = T, escape=F, caption=caption, label=label, format="latex") %>% 
+              kable_styling(latex_options = "HOLD_position")
+    write(adf_out, file=adf_file)
     predictions_df <- predictions_df[!names(predictions_df) %in% c("observed")]
     write.csv(predictions_df, paste("data/model_output/arima/", chem, "_VAR_forecasts.csv", sep=""), row.names = FALSE)
 }
         
-#########
-# This code was initlaly intended for the time series course. It may not be necessary for here
-#########
-# The analysis is then repeated for October to the end of the year, to account for the period
-# of the most intense covid
-# First traffic
-detector_subset <- detector_df %>% dplyr::filter(from > "2020-10-01 00:00:00" & from <= "2021-01-01")
-detector_complete <- detector_subset %>% complete(from = seq(min(from), max(from), by="hour"))
-nrow(detector_complete)
-detector_complete$volume_inter <- round(na_interpolation(detector_complete$volume),1)
-# aggregate by day, but need to round up if staying in 2019
-traffic_daily <- detector_complete %>% mutate(day=lubridate::ceiling_date(from, "day")) %>% group_by(day) %>% 
-  summarise(daily_volume=mean(volume_inter)) 
-traffic_daily
-nrow(traffic_daily)
-min(traffic_daily$day)
-max(traffic_daily$day)
-traffic_ts <- ts(traffic_daily$daily_volume, frequency=7, start=c(2020, 39))
-# Covid
-covid_subset <- covid_flanders %>% dplyr::filter(day > "2020-10-01" & day <= "2021-01-02")
-covid_subset
-nrow(covid_subset)
-min(covid_subset$day)
-max(covid_subset$day)
-cov_ts <- ts(covid_subset$total_cases, frequency=7, start=c(2020, 39))
-# And NO2
-station_subset <- highest_station %>% dplyr::filter(datetime >= "2020-10-01" & datetime <= "2021-01-01")
-station_complete <- station_subset %>% tidyr::complete(datetime = seq(min(datetime), max(datetime), by="hour"))
-nrow(station_complete)
-station_complete$concentration_inter <- round(na_interpolation(station_complete$Concentration),1)
-air_daily <- station_complete %>% mutate(day=lubridate::ceiling_date(datetime, "day")) %>% group_by(day) %>% 
-  summarise(daily_concentration=mean(concentration_inter)) 
-air_daily
-# create the ts
-air_ts <- ts(air_daily$daily_concentration, frequency=7, start=c(2020, 39))
-
-ts.plot(air_ts)
-ts.plot(cov_ts)
-ts.plot(traffic_ts)
-
-# Then reselect lags and remodel
-length(cov_ts)
-length(air_ts)
-length(traffic_ts)
-# Set up dfs
-var_df_cov <- data.frame(air_ts, traffic_ts, cov_ts)
-var_df_no_cov <- data.frame(air_ts, traffic_ts)
-names(var_df_cov)<-c("air","traffic", "covid")
-names(var_df_no_cov)<-c("air","traffic")
-VARselect(var_df_cov,lag.max=10,type="none")
-VARselect(var_df_no_cov,lag.max=10,type="none")
-# both still order 8
-
-# REgenerating predictions
-H <- c(1, 5, 10)
-s <- round(0.75*length(air_ts))
-dm_tests <- matrix(nrow=length(H), ncol=3)
-oos_errors <- matrix(nrow=3, ncol=5)
-for (i in 1:length(H)){
-    h <- H[i]
-    print(h)
-    error_cov <- c()
-    error_nocov <- c()
-    for (k in s:(length(air_ts)-h)){
-        var_df_cov_sub <- data.frame(air_ts[1:k], diff(traffic_ts)[1:k], diff(cov_ts)[1:k])
-        var_df_no_cov_sub <- data.frame(air_ts[1:k], diff(traffic_ts)[1:k])
-        names(var_df_cov_sub)<-c("air","traffic", "covid")
-        names(var_df_no_cov_sub)<-c("air","traffic")
-        fit_var_cov <- VAR(var_df_cov_sub,type="const",p=8)
-        fit_var_nocov <- VAR(var_df_no_cov_sub,type="const",p=8)
-        # predict h step ahead
-        predict_cov_out <- predict(fit_var_cov,n.ahead=h)
-        predict_cov <- predict_cov_out[[1]][1]$air[h]
-        predict_nocov_out <- predict(fit_var_nocov,n.ahead=h)
-        predict_nocov <- predict_nocov_out[[1]][1]$air[h]
-        # subtract the predicted value predict.h from the observed value, y[i+h]
-        error_cov <- c(error_cov,air_ts[k+h]-predict_cov)
-        error_nocov <- c(error_nocov,air_ts[k+h]-predict_nocov)
-    }
-    cov_mape <- mean(abs(error_cov)/air_ts[(s+h):length(air_ts)])
-    nocov_mape <- mean(abs(error_nocov)/air_ts[(s+h):length(air_ts)])
-    cov_rmse <- sqrt(mean(error_cov^2))
-    nocov_rmse <- sqrt(mean(error_nocov^2))
-    oos_errors[i, 1] <- h
-    oos_errors[i, 2] <- cov_mape
-    oos_errors[i, 3] <- cov_rmse
-    oos_errors[i, 4] <- nocov_mape
-    oos_errors[i, 5] <- nocov_rmse
-    dm_tests[i, 1] <- h
-    dm_tests[i, 2] <- dm.test(error_cov, error_nocov,h=h,power=1)$p.value[[1]]
-    dm_tests[i, 3] <- dm.test(error_cov, error_nocov,h=h,power=2)$p.value[[1]]
-}
-oos_errors
-dm_tests
-oos_df <- as.data.frame(oos_errors)
-dm_tests
-dm_df <- as.data.frame(dm_tests)
-colnames(oos_df) <- c("Horizon", "W/ COVID MAPE", "W/COVID RMSE", "W/out COVID MAPE", "W/out COVID RMSE")
-colnames(dm_df) <- c("Horizon", "MAE", "MSE")
-kbl(oos_df, booktabs = T, format="latex")
-kbl(dm_df, booktabs = T, format="latex")
-
