@@ -7,6 +7,7 @@ library(ggplot2)
 library(stringr)
 library(kableExtra)
 library(CADFtest)
+library(scales)
 
 #  Use the development version from github, so we can use the 
 # positive-ensured variance estimator
@@ -119,7 +120,7 @@ station_analysis <- function(){
                              "when comparing effect of station identification variable.")
             label <- paste("station_", chem, "_h-", h, sep="")
             print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, 
-                      align=c('lcccc')) %>% 
+                      align=c('lcccc'), digits=4) %>% 
               kable_styling(latex_options = "HOLD_position") %>%  
                   add_header_above(c(" " = 1, "w/ station" = 2, "w/o station" = 2))
               )
@@ -145,23 +146,27 @@ station_analysis <- function(){
     
         # Then prepare the DM output 
         dm_tests <- round(dm_tests, 3)
-        col <- seq_len(ncol(dm_tests))
-        for (i in 1:nrow(dm_tests)){
-            sig_i <- which(dm_tests[i,] < .05)
-            # This will return the indices for which the p value is less than .05
-            # Then iterate through and set the cells.
-            for (k_index in 1:length(sig_i)){
-                k <- sig_i[k_index]
-                dm_tests[i,k] <- dm_tests[i,k] %>% cell_spec(bold = T)
-            }
-        }
+        
         dm_df <- as.data.frame(dm_tests)
         dm_df$station <- station_names
         # Move station id to front
         dm_df <- dm_df %>%
             select(station, everything())
-        names(dm_df) <- c("Station", "H=1", "H=5", "H=10")
-        caption <- paste("Diebold Mariano tests comparing models with and without station variable for each horizon")
+        names(dm_df) <- c("Station", "H1", "H5", "H10")
+        dm_df %>% mutate(H1=scales::pvalue(H1), H5=scales::pvalue(H5), H10=scales::pvalue(H10)) -> dm_df
+        for (i in 1:nrow(dm_df)){
+            sig_i <- which(dm_df[i,] < .05)
+            # This will return the indices for which the p value is less than .05
+            # Then iterate through and set the cells.
+            if (length(sig_i) != 0){
+                for (k_index in 1:length(sig_i)){
+                    k <- sig_i[k_index]
+                    dm_df[i,k] <- dm_df[i,k] %>% cell_spec(bold = T)
+                }
+            }
+        }
+        caption <- paste("Diebold Mariano tests comparing models with and without station variable for each horizon, 
+                         for pollutant ", toupper(chem), sep="")
         label <- paste("dm_station_", chem, sep="")
         print(kbl(dm_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
           kable_styling(latex_options = "HOLD_position")
@@ -171,8 +176,8 @@ station_analysis <- function(){
             stationary_df$station <- station_names
             stationary_df <- stationary_df %>%
                 select(station, everything())
-            names(stationary_df) <- c("Station", "H=1", "H=5", "H=10")
-            caption = "Augmented Dickey Fuller test for stationarity"
+            names(stationary_df) <- c("Station", "H1", "H5", "H10")
+            caption = "ADF for stationarity"
             label <- paste("adf_station_", chem, sep="")
             print(kbl(stationary_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
               kable_styling(latex_options = "HOLD_position")

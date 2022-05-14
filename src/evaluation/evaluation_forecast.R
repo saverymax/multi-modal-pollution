@@ -91,7 +91,7 @@ forecast_analysis <- function(){
         caption <- paste("Out-of-sample MAE when forecast mask is removed, for pollutant ", 
                          toupper(chem),". Lowest MAE is in bold, per station", sep="")
         label <- paste("forecast_mask_", chem, sep="")
-        print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, align=c("lcccc")) %>% 
+        print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, align=c("lcccc"), digits=4) %>% 
                   kable_styling(latex_options = "HOLD_position") %>% 
                   add_header_above(c(" " = 1, "H=0" = 2, "H=1" = 2))
                   )

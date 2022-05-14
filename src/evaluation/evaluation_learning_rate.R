@@ -7,6 +7,7 @@ library(ggplot2)
 library(stringr)
 library(kableExtra)
 library(CADFtest)
+library(scales)
 
 #  Use the development version from github, so we can use the 
 # positive-ensured variance estimator
@@ -21,7 +22,7 @@ source("evaluation_data_functions.R")
 
 main_analysis <- function(){
     # To generate tests for stationarity of errors
-    run_adf = TRUE
+    run_adf = F
     
     chem_names <- c("pm25", "pm10", "no2")
     chem_ids <- vector(mode="list", length=length(chem_names))
@@ -166,7 +167,7 @@ main_analysis <- function(){
                              ", and transformer learning rate ", lr_text, " compared to VAR model.", sep="")
                 label <- paste("lr-", lr_text, "_", chem, "_h-", h, sep="")
                 print(kbl(oos_df, booktabs = T, escape=F, caption=caption, label=label, 
-                          align=c('lcccc')) %>% 
+                          align=c('lcccc'), digits=4) %>% 
                   kable_styling(latex_options = "HOLD_position") %>% 
                   add_header_above(c(" " = 1, "Transformer" = 2, "VAR" = 2))
                   )
@@ -189,29 +190,31 @@ main_analysis <- function(){
                 #    dm_tests[i, h_index] <- dm_row
                 #        }
             }
-            
             # Then prepare the DM output 
             dm_tests <- round(dm_tests, 3)
-            col <- seq_len(ncol(dm_tests))
-            for (i in 1:nrow(dm_tests)){
-                sig_i <- which(dm_tests[i,] < .05)
-                # This will return the indices for which the p value is less than .05
-                # Then iterate through and set the cells.
-                for (k_index in 1:length(sig_i)){
-                    k <- sig_i[k_index]
-                    dm_tests[i,k] <- dm_tests[i,k] %>% cell_spec(bold = T)
-                }
-            }
             dm_df <- as.data.frame(dm_tests)
             dm_df$station <- station_names
             # Move station id to front
             dm_df <- dm_df %>%
                 select(station, everything())
-            names(dm_df) <- c("Station", "H=1", "H=5", "H=10")
+            names(dm_df) <- c("Station", "H1", "H5", "H10")
+            dm_df %>% mutate(H1=scales::pvalue(H1), H5=scales::pvalue(H5), H10=scales::pvalue(H10)) -> dm_df
+            for (i in 1:nrow(dm_df)){
+                sig_i <- which(dm_df[i,] < .05)
+                # This will return the indices for which the p value is less than .05
+                # Then iterate through and set the cells.
+                if (length(sig_i) != 0){
+                    for (k_index in 1:length(sig_i)){
+                        k <- sig_i[k_index]
+                        dm_df[i,k] <- dm_df[i,k] %>% cell_spec(bold = T)
+                    }
+                }
+            }
             caption <- paste("Diebold Mariano tests comparing VAR and transformer with learning rate ",
-                             lr_text, ", for each station and horizon, for pollutant ", toupper(chem), sep="")
+                             lr_text, ", for each station and horizon, for pollutant ", toupper(chem), 
+                             ". p-values less than .05 are in bold",  sep="")
             label <- paste("dm_tests_lr-", lr_text, "_", chem, sep="")
-                print(kbl(dm_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
+            print(kbl(dm_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
                   kable_styling(latex_options = "HOLD_position")
                   )
                 
@@ -220,9 +223,23 @@ main_analysis <- function(){
                 stationary_df$station <- station_names
                 stationary_df <- stationary_df %>%
                     select(station, everything())
-                names(stationary_df) <- c("Station", "H=1", "H=5", "H=10")
-                caption = paste("Augmented Dickey Fuller test for stationarity, for pollutant ", 
-                                toupper(chem), ", and learning rate ", lr_text, sep="")
+                names(stationary_df) <- c("Station", "H1", "H5", "H10")
+                stationary_df %>% 
+                    mutate(H1=scales::pvalue(H1), H5=scales::pvalue(H5), H10=scales::pvalue(H10)) -> stationary_df
+                for (i in 1:nrow(stationary_df)){
+                    sig_i <- which(stationary_df[i,] < .05)
+                    # This will return the indices for which the p value is less than .05
+                    # Then iterate through and set the cells.
+                    if (length(sig_i) != 0){
+                        for (k_index in 1:length(sig_i)){
+                            k <- sig_i[k_index]
+                            stationary_df[i,k] <- stationary_df[i,k] %>% cell_spec(bold = T)
+                        }
+                    }
+                }
+                caption = paste("ADF test for stationarity, for pollutant ", 
+                                toupper(chem), ", and learning rate ", lr_text,  
+                                ". p-values less than .05 are in bold", sep="")
                 label <- paste("adf_station_", chem, "_lr_", lr_text, sep="")
                 print(kbl(stationary_df, booktabs = T, escape=F, caption=caption, label=label) %>% 
                           kable_styling(latex_options = "HOLD_position")
@@ -233,6 +250,9 @@ main_analysis <- function(){
         mean_diffs <- round(mean_diffs, 3)
         mean_df <- as.data.frame(mean_diffs) 
         names(mean_df) <- c("RMSE", "MAE")
+        mean_df$Pollutant <- c("PM25", "PM10", "NO2")
+        mean_df <- mean_df %>%
+            select(Pollutant, everything())
         caption <- paste("Mean difference between VAR and transformer in terms 
                          of MAE and RMSE, for horizon 1 and learning rate ", lr_text, sep="")
         label <- paste("mean_df_lr_", lr_text, sep="")
