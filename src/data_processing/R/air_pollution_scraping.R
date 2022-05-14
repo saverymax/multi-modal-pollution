@@ -1,6 +1,8 @@
 # Script to download air pollution data from EEA
 library(tidyverse)
-setwd("D:/linux_documents_11_2021/thesis/code/multi-modal-pollution/data/eea_air")
+user_dir <- "D:/asus_documents/ku_leuven/thesis/code/multi-modal-pollution/data/eea_air"
+setwd(user_dir)
+
 # Scraping
 library(RCurl)
 library(httr)
@@ -23,40 +25,18 @@ pm25 <- 6001
 pm10 <- 5
 # no2 is code 8
 no2 <- 8
-# nox as no2
-nox <- 9
-# co2 is code 71 but co2 isn't provided with this service because of differences in the way data is collected
-# carbon monoxide
-co <- 10
-# Sulfur dioxide
-so2 <- 1
-# This is how we do dictionaries in R.
-city_names <- c("copen", "paris", "brux", "ams")
-city_urls <- vector(mode="list", length=4)
-names(city_urls) <- city_names
+# Even though we scrape for Belgium, the filenames of the data 
+# are associated with brussels, a residue of our initial work 
+country_names <- c("brux")
+urls <- vector(mode="list", length=1)
+names(urls) <- country_names
 # copenhagen:
-copen_url <- "https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=DK&CityName=K%C3%B8benhavn&Pollutant="
-# paris
-paris_url <- "https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=FR&CityName=Paris&Pollutant="
-# brussels
-brux_url <- "https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=BE&CityName=&Pollutant="
-# Amsterdam
-ams_url <- "https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=NL&CityName=Amsterdam&Pollutant="
-city_urls[[1]] <- copen_url
-city_urls[[2]] <- paris_url
-city_urls[[3]] <- brux_url
-city_urls[[4]] <- ams_url
+bel_url <- "https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=BE&CityName=&Pollutant="
+urls[[1]] <- bel_url
 
-# Useful if I need to redo just 1
-#city_urls <- vector(mode="list", length=1)
-#names(city_urls) <- c("paris")
-#city_urls[[1]] <- paris_url
-#city_urls
-
-
-for (city_url in city_urls){
-  for (i in c(pm25, pm10, no2, co, so2, nox)){
-    url <- paste(city_url, i, "&Year_from=2019&Year_to=2022&Station=&Samplingpoint=&Source=All&Output=HTML&UpdateDate=&TimeCoverage=Year", sep="")
+for (u in urls){
+  for (i in c(pm25, pm10, no2)){
+    url <- paste(u, i, "&Year_from=2019&Year_to=2022&Station=&Samplingpoint=&Source=All&Output=HTML&UpdateDate=&TimeCoverage=Year", sep="")
     print(url)
     get_out <- POST(url)
     str(content(get_out))
@@ -69,8 +49,8 @@ for (city_url in city_urls){
     length(all_csv)
     all_csv[1]
     # Get the name associated with the current URL
-    city <- names(city_urls)[city_urls==city_url]
-    download_dir <- paste("time_series_", city, "_", i, sep="")
+    country <- names(urls)[urls==u]
+    download_dir <- paste("time_series_", country, "_", i, sep="")
     print(download_dir)
     # Create directory
     dir.create(download_dir, showWarnings = T) 
