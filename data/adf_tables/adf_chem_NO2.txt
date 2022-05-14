@@ -1,0 +1,60 @@
+\begin{table}[H]
+
+\caption{\label{tab:adf_chem_NO2}ADF tests for each station, pollutant NO2}
+\centering
+\begin{tabular}[t]{lll}
+\toprule
+Station & Levels & Differences\\
+\midrule
+STA-BETR731 & <0.001 & <0.001\\
+STA-BETR801 & <0.001 & <0.001\\
+STA-BETR805 & <0.001 & <0.001\\
+STA-BETR802 & <0.001 & <0.001\\
+STA-BETR750 & <0.001 & <0.001\\
+\addlinespace
+STA-BETN052 & <0.001 & <0.001\\
+STA-BETM705 & <0.001 & <0.001\\
+STA-BETN043 & <0.001 & <0.001\\
+STA-BETR701 & <0.001 & <0.001\\
+STA-BETR803 & <0.001 & <0.001\\
+\addlinespace
+STA-BETR811 & <0.001 & <0.001\\
+STA-BETM802 & <0.001 & <0.001\\
+STA-BETR710 & <0.001 & <0.001\\
+STA-BETR020 & <0.001 & <0.001\\
+STA-BETN016 & <0.001 & <0.001\\
+\addlinespace
+STA-BETR817 & <0.001 & <0.001\\
+STA-BETR831 & <0.001 & <0.001\\
+STA-BETN035 & <0.001 & <0.001\\
+STA-BETR512 & <0.001 & <0.001\\
+STA-BETR001 & <0.001 & <0.001\\
+\addlinespace
+STA-BETN054 & <0.001 & <0.001\\
+STA-BETR223 & <0.001 & <0.001\\
+STA-BETN070 & <0.001 & <0.001\\
+STA-BETR502 & <0.001 & <0.001\\
+STA-BETR501 & <0.001 & <0.001\\
+\addlinespace
+STA-BETR240 & <0.001 & <0.001\\
+STA-BETN060 & <0.001 & <0.001\\
+STA-BETN063 & <0.001 & <0.001\\
+STA-BETR221 & <0.001 & <0.001\\
+STA-BETN073 & <0.001 & <0.001\\
+\addlinespace
+STA-BETN121 & <0.001 & <0.001\\
+STA-BETN093 & <0.001 & <0.001\\
+STA-BETN100 & <0.001 & <0.001\\
+STA-BETN132 & <0.001 & <0.001\\
+STA-BETN113 & <0.001 & <0.001\\
+\addlinespace
+STA-BETN047 & <0.001 & <0.001\\
+STA-BETR702 & <0.001 & <0.001\\
+STA-BETN029 & <0.001 & <0.001\\
+STA-BETN085 & <0.001 & <0.001\\
+STA-BETR401 & <0.001 & <0.001\\
+\addlinespace
+STA-BETR818 & <0.001 & <0.001\\
+\bottomrule
+\end{tabular}
+\end{table}
