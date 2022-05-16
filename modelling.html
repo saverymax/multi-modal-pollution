@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Models &mdash; multi-modal-pollution 1.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Experiments" href="experimentation.html" />
+    <link rel="prev" title="Data" href="data_processing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> multi-modal-pollution
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_processing.html">Data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arima">ARIMA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transformer">Transformer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="experimentation.html">Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experimentation.html#evaluation">Evaluation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">multi-modal-pollution</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modelling.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="models">
+<h1>Models<a class="headerlink" href="#models" title="Permalink to this headline"></a></h1>
+<section id="arima">
+<h2>ARIMA<a class="headerlink" href="#arima" title="Permalink to this headline"></a></h2>
+<p>The ARIMA (SARIMA and VAR) models can be ran from the <a class="reference external" href="https://github.com/saverymax/multi-modal-pollution/tree/main/src/modelling">modeling directory</a>. However, only the VAR model is reported in the thesis work and in the evaluation scripts found in this repository. The VAR script will generate forecasts for each air measuring station, for each chemical, and for each horizon (1, 5, and 10 days).</p>
+<p>The following VAR model is used:</p>
+<div class="amsmath math notranslate nohighlight">
+\[\begin{gather*}
+    \overrightarrow{y_t}
+     =
+     \begin{pmatrix}
+     a_{1,1} x_{t-1} + a_{1,2} y_{t-1} a_{1,3}z_{t-1} + \cdots + a_{1,22}x_{t-8} + a_{1,23}y_{t-8} + a_{1,24}z_{t-8}+ \mu_{x,t} \\
+     a_{2,1} x_{t-1} + a_{2,2} y_{t-1} a_{2,3}z_{t-1} + \cdots + a_{2,22}x_{t-8} + a_{2,23}y_{t-8} + a_{2,24}z_{t-8} + \mu_{y,t} \\
+     a_{3,1} x_{t-1} + a_{3,2} y_{t-1} a_{3,3}z_{t-1} + \cdots + a_{3,22}x_{t-8} + a_{3,23}y_{t-8} + a_{3,24}z_{t-8} + \mu_{z,t} \end{pmatrix}
+\end{gather*}\]</div>
+<p>The model forecasts can be found in the <a class="reference external" href="https://github.com/saverymax/multi-modal-pollution/tree/main/data/model_output/arima">data/model_output/arima directory</a>. These files are produced from the scripts linked above and are provided for users to rerun the evaluation without rerunning the models.</p>
+</section>
+<section id="transformer">
+<h2>Transformer<a class="headerlink" href="#transformer" title="Permalink to this headline"></a></h2>
+<p>The transformer code can be found in <a class="reference external" href="https://github.com/saverymax/mvts_transformer">our repository</a>, forked from https://github.com/gzerveas/mvts_transformer. In this code you can specify the options for pretraining, regression, or classification, as in the original repository, with any of the original datasets.</p>
+<p>But now, it is also possible to utilize our implementation of multivariate forecasting. Basic usage of the transformer in this capacity is described there.</p>
+<p>In this work, we generate the transformer forecasts in two steps. We first finetune the model, using the experiment cripts in <a class="reference external" href="https://github.com/saverymax/mvts_transformer/tree/master/experiments/generated_experiments/finetune">the mvts repository</a>. We then use these models to generate the forecasts using <a class="reference external" href="https://github.com/saverymax/mvts_transformer/tree/master/experiments/generated_experiments/eval">the scripts here</a>. It is simpler to break up the training and testing in to a two-step process so we can evaluate the finetuning of the model before generating forecasts on the test set.</p>
+<p>Note that to train and test the model, the data <a class="reference external" href="https://github.com/saverymax/multi-modal-pollution/tree/main/data/mvts_train">is provided in this repository</a> but can also be generated from scratch as described in the Data processing section of this documentation.</p>
+<p>The forecasts generated by the transformer on our test set can be found in <a class="reference external" href="https://github.com/saverymax/multi-modal-pollution/tree/main/data/model_output/mvts">data/model_output/mvts</a>. We provide these so the user does not have to train/test the models and can skip directly to the evaluation of the results.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data_processing.html" class="btn btn-neutral float-left" title="Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="experimentation.html" class="btn btn-neutral float-right" title="Experiments" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Max Savery.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
