@@ -11,7 +11,6 @@ The code and usage is fully described in the documentation at https://saverymax.
 
 The experiments run for the thesis be found at https://wandb.ai/mix/mvts-forecasting?workspace=user-mix.
 
-## Citation
+## Transformer for forecasting
 
-TODO: Provide citation
-
+The forked multivariate transformer code with added forecasting module can be found at https://github.com/saverymax/mvts_transformer
